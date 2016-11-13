@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <sqlite3.h>
 
+#define MAX_PREPARE_BYTES -1 //10240
 #define INT "int"
 #define REAL "real"
 #define TEXT "text"
@@ -33,9 +34,16 @@ class Alicia {
     private:
         sqlite3 *conn;
         stringstream ss;
+        sqlite3_stmt* del_h;
+        sqlite3_stmt* ins_h;
+        sqlite3_stmt* up_h;
+        sqlite3_stmt* fetch_h;
+        sqlite3_stmt* key_h;
+
     public:
         Alicia();
         int sql_exec(string sql, int line);
+        int prepare_store();
         char* get( const char* var );
         void del( const char* var );
         void set( const char* var, const char* val );
