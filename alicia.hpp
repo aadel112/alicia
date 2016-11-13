@@ -40,10 +40,12 @@ class Alicia {
         sqlite3_stmt* fetch_h;
         sqlite3_stmt* key_h;
 
-    public:
-        Alicia();
         int sql_exec(string sql, int line);
         int prepare_store();
+ 
+    public:
+        Alicia();
+        ~Alicia();
         char* get( const char* var );
         void del( const char* var );
         void set( const char* var, const char* val );

@@ -5,6 +5,7 @@ using namespace std;
 Alicia::Alicia() {
     int rc = 0;
     char *zErrMsg = 0;
+
     ss << " CREATE TABLE symbol_table( "
         << "       key int, "
         << "       var text, "
@@ -14,9 +15,11 @@ Alicia::Alicia() {
         << "       text_value text"
         << ");";
     string create_sql = ss.str();
+    ss.str("");
     ss  << "CREATE unique index idx01 ON "
         << "symbol_table(key)";
     string idx_sql = ss.str();
+    ss.str("");
     string pthreads = "PRAGMA threads = 50";
     string pdirty = "PRAGMA read_uncomitted = true";
     string pvac = "PRAGMA auto_vaccum = full";
@@ -35,26 +38,47 @@ Alicia::Alicia() {
     rc = !rc and prepare_store();
 }
 
+Alicia::~Alicia() {
+    
+    if( del_h )
+        sqlite3_finalize(del_h);
+    if( ins_h )
+        sqlite3_finalize(ins_h);
+    if( up_h )
+        sqlite3_finalize(up_h);
+    if( fetch_h )
+        sqlite3_finalize(fetch_h);
+    if( key_h )
+        sqlite3_finalize(key_h);
+
+    sqlite3_close(conn);
+}
+
 int Alicia::prepare_store() {
     int rc = 0;
 
     ss << "DELETE FROM symbol_table WHERE key = :key";
     string del_sql = ss.str();
+    ss.str("");
     ss << "INSERT INTO symbol_table VALUES"
         << "(:key, :var, :type, :digit_value"
         << ", :decimal_value, :text_value)";
     string ins_sql = ss.str();
+    ss.str("");
     ss << "UPDATE symbol_table SET var = :var,"
         << "type = :type, digit_value = :digit_value,"
         << "decimal_value = :decimal_value,"
         << "text_value = :text_value "
         << "WHERE key = :key";
     string up_sql = ss.str();
+    ss.str("");
     ss << "SELECT * FROM symbol_table WHERE key = :key";
     string fetch_sql = ss.str();
+    ss.str("");
     ss << "SELECT COUNT(*) FROM symbol_table "
         << "WHERE key = :key";
     string key_sql = ss.str();
+    ss.str("");
 
     rc = sqlite3_prepare_v2(
         conn, del_sql.c_str(), 
