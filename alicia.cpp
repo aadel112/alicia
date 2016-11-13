@@ -45,7 +45,7 @@ int Alicia::sql_exec(string sql, int line) {
     return rc;
 }
 
-template<typename T>  string Alicia::get( T var ) {} //STUB
-template<typename T, typename K>  void Alicia::set( T var, K val ) {} //STuB
-template<typename T>  void Alicia::del( T var ) {} //STUB
-string exec( string sql ) {} //STUB
+char* Alicia::get( const char* var ) {} //STUB
+void Alicia::set( const char* var, const char* val ) {} //STuB
+void Alicia::del( const char* var ) {} //STUB
+char* Alicia::exec( const char* sql ) {} //STUB
