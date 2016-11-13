@@ -20,6 +20,7 @@
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
+#include <regex>
 #include <sqlite3.h>
 
 #define MAX_PREPARE_BYTES -1 //10240
@@ -29,6 +30,7 @@
 #define JSON "json" //TODO
 
 using namespace std;
+using namespace std::regex_constants;
 
 class Alicia {
     private:
@@ -40,14 +42,22 @@ class Alicia {
         sqlite3_stmt* fetch_h;
         sqlite3_stmt* key_h;
 
-        int sql_exec(string sql, int line);
+        int sql_exec(const char* sql, int line);
         int prepare_store();
- 
+        bool is_simple_exec( const char* sql );
+        bool key_exists( long long key );
+        long long get_key(const char* var);
+        void sql_fetch( const char* sql, int line );
+        void sql_exec_stmt( sqlite3_stmt* stmt, int line );
+        char* fetch_one_stmt( sqlite3_stmt* stmt, int line );
+    
     public:
+        char* last_result_set[1000][3];
+        
         Alicia();
         ~Alicia();
         char* get( const char* var );
         void del( const char* var );
         void set( const char* var, const char* val );
-        char* exec( const char* sql );
+        void exec( const char* sql );
 };

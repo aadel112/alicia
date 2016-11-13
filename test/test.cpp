@@ -36,9 +36,10 @@ int test_basics() {
 	string sql;
 
     t = "5";
+//     string x = "0";
 	sql = "SELECT var + 1 FROM symbol_table WHERE var = 'data'";
-	char* res = a->exec( sql.c_str() );
-	assert( !strcmp(res, t.c_str()), "simple addition", __LINE__ );
+	a->exec( sql.c_str() );
+	assert( !strcmp(a->last_result_set[0][0], t.c_str()), "simple addition", __LINE__ );
 
     
     return assert_failure;
