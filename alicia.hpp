@@ -36,4 +36,8 @@ class Alicia {
     public:
         Alicia();
         int sql_exec(string sql, int line);
+        template<typename T>  string get( T var );
+        template<typename T>  void del( T var );
+        template<typename T, typename K>  void set( T var, K val );
+        string exec( string sql );
 };
