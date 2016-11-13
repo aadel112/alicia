@@ -23,6 +23,8 @@
 #include <regex>
 #include <sqlite3.h>
 
+// #define DB_FILE ":memory:"
+#define DB_FILE "/tmp/tmp.db"
 #define MAX_PREPARE_BYTES -1 //10240
 #define INT "int"
 #define REAL "real"

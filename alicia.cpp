@@ -9,7 +9,7 @@ Alicia::Alicia() {
     ss << " CREATE TABLE symbol_table( "
         << "       key int, "
         << "       var text, "
-        << "  value text"
+        << "       value text"
         << ");";
     string create_sql = ss.str();
     ss.str("");
@@ -23,7 +23,7 @@ Alicia::Alicia() {
 
     string stat_sql = "ANALYZE";
 
-    rc = sqlite3_open(":memory:", &conn);
+    rc = sqlite3_open(DB_FILE, &conn);
     
     rc = !rc and sql_exec( create_sql.c_str(), __LINE__ ); 
     rc = !rc and sql_exec( idx_sql.c_str(), __LINE__ );
@@ -127,16 +127,20 @@ bool Alicia::is_simple_exec( const char* sql ) {
 
 bool Alicia::key_exists( long long key ) {
     sqlite3_int64 k = key;
-    sqlite3_bind_int64(key_h, 1, k);
+    if( sqlite3_bind_int64(key_h, 1, k) 
+            != SQLITE_OK ) {
+        fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+    }
     return strncmp(fetch_one_stmt(key_h, __LINE__), "1", 1);
 }
 
 //simple, use better versions if there is  a reason
 long long Alicia::get_key(const char* var) {
-    auto h = 0;
+    long long h = 0;
     while (*var)
        h = h << 1 ^ *var++;
-    return h > 0 ? h : -h;
+    h = h > 0 ? h : -h;
+    return h;
 }
 
 void Alicia::sql_fetch( const char* sql, int line ) {} //STUB
@@ -152,6 +156,8 @@ void Alicia::sql_exec_stmt( sqlite3_stmt* stmt, int line ) {
 //             string k = sqlite3_column_name(stmt, col);
 //             string v = sqlite3_column_text(stmt, col);
                 last_result_set[row][col] = (char*)sqlite3_column_text(stmt,col);
+//                 printf("%d, %d, %s\n", row, col, 
+//                         last_result_set[row][col]);
 //             columns[k] = v;
 
 		}
@@ -179,15 +185,40 @@ void Alicia::set( const char* var, const char* val ) {
     
     sqlite3_int64 k = key;
 
-    auto h = ins_h;
-    if( key_exists(key) ) {
-        h = up_h;
+    auto h = up_h;
+    if( !key_exists(key) ) {
+        h = ins_h;
+        if( sqlite3_bind_int64(h, 1, k) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+        }
+        if( sqlite3_bind_text(h, 2, var, 
+                strlen(var), SQLITE_STATIC) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 2 on line %d\n", __LINE__);
+        }
+        if( sqlite3_bind_text(h, 3, val, 
+                strlen(val), SQLITE_STATIC) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 3 on line %d\n", __LINE__);
+        }
+    } else {
+        
+        if( sqlite3_bind_text(h, 1, var, 
+                strlen(var), SQLITE_STATIC) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+        }
+        if( sqlite3_bind_text(h, 2, val, 
+                strlen(val), SQLITE_STATIC) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 2 on line %d\n", __LINE__);
+        }
+        if( sqlite3_bind_int64(h, 3, k) 
+                != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't bind parameter 3 on line %d\n", __LINE__);
+        }
     }
-
-    sqlite3_bind_int64(h, 1, k);
-    sqlite3_bind_text(h, 2, var, strlen(var), SQLITE_STATIC);
-    sqlite3_bind_text(h, 3, val, strlen(val), SQLITE_STATIC);
-
     sql_exec_stmt(h, __LINE__);
 }
 void Alicia::del( const char* var ) {
