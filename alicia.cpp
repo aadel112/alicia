@@ -103,7 +103,7 @@ void Alicia::sql_exec_stmt( int stmt_type, int line ) {
             // Note that by using sqlite3_column_text, sqlite will coerce the value into a string
 //             string k = sqlite3_column_name(stmt, col);
 //             string v = sqlite3_column_text(stmt, col);
-                last_result_set[row][col] = (char*)sqlite3_column_text(STMT,col);
+            last_result_set[row][col] = (char*)sqlite3_column_text(STMT,col);
 //                 printf("%d, %d, %s\n", row, col, 
 //                         last_result_set[row][col]);
 //             columns[k] = v;

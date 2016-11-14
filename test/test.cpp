@@ -38,7 +38,6 @@ int test_basics() {
     t = "5";
 	sql = "SELECT value + 1 FROM symbol_table WHERE var = 'data'";
 	a->exec( sql.c_str() );
-    printf("%s\n", a->last_result_set[0][0]);
 	assert( !strcmp(a->last_result_set[0][0], t.c_str()), "simple addition", __LINE__ );
 
     
