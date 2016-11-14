@@ -32,7 +32,6 @@ Alicia::Alicia() {
     rc = !rc and sql_exec( pvac.c_str(), __LINE__ );
     rc = !rc and sql_exec( stat_sql.c_str(), __LINE__ );
 
-    rc = !rc and prepare_store();
 }
 
 Alicia::~Alicia() {
@@ -49,58 +48,6 @@ Alicia::~Alicia() {
         sqlite3_finalize(key_h);
 
     sqlite3_close(conn);
-}
-
-int Alicia::prepare_store() {
-    int rc = 0;
-
-    ss << "DELETE FROM symbol_table WHERE key = :key";
-    string del_sql = ss.str();
-    ss.str("");
-    ss << "INSERT INTO symbol_table VALUES"
-        << "(:key, :var, :value)";
-    string ins_sql = ss.str();
-    ss.str("");
-    ss << "UPDATE symbol_table SET var = :var,"
-        << "value = :value "
-        << "WHERE key = :key";
-    string up_sql = ss.str();
-    ss.str("");
-    ss << "SELECT value FROM symbol_table WHERE key = :key";
-    string fetch_sql = ss.str();
-    ss.str("");
-    ss << "SELECT COUNT(*) FROM symbol_table "
-        << "WHERE key = :key";
-    string key_sql = ss.str();
-    ss.str("");
-
-    rc = sqlite3_prepare_v2(
-        conn, del_sql.c_str(), 
-        MAX_PREPARE_BYTES, &del_h, NULL
-    );
-
-    rc = !rc and sqlite3_prepare_v2(
-        conn, ins_sql.c_str(), 
-        MAX_PREPARE_BYTES, &ins_h, NULL
-    );
-
-    rc = !rc and sqlite3_prepare_v2(
-        conn, up_sql.c_str(), 
-        MAX_PREPARE_BYTES, &up_h, NULL
-    );
-
-    rc = !rc and sqlite3_prepare_v2(
-        conn, fetch_sql.c_str(), 
-        MAX_PREPARE_BYTES, &fetch_h, NULL
-    );
-
-    rc = !rc and sqlite3_prepare_v2(
-        conn, key_sql.c_str(), 
-        MAX_PREPARE_BYTES, &key_h, NULL
-    );
-         
-
-    return rc;
 }
 
 int Alicia::sql_exec(const char* sql, int line) {
@@ -125,18 +72,19 @@ bool Alicia::is_simple_exec( const char* sql ) {
     return regex_search( s, m, e );
 }
 
-bool Alicia::key_exists( long long key ) {
-    sqlite3_int64 k = key;
-    if( sqlite3_bind_int64(key_h, 1, k) 
+bool Alicia::key_exists( int key ) {
+    prepare( KEY, key_sql );
+
+    if( sqlite3_bind_int(key_h, 1, key) 
             != SQLITE_OK ) {
-        fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
     }
-    return strncmp(fetch_one_stmt(key_h, __LINE__), "1", 1);
+    return !strncmp(fetch_one_stmt(KEY, __LINE__), "1", 1);
 }
 
 //simple, use better versions if there is  a reason
-long long Alicia::get_key(const char* var) {
-    long long h = 0;
+int Alicia::get_key(const char* var) {
+    int h = 0;
     while (*var)
        h = h << 1 ^ *var++;
     h = h > 0 ? h : -h;
@@ -145,17 +93,17 @@ long long Alicia::get_key(const char* var) {
 
 void Alicia::sql_fetch( const char* sql, int line ) {} //STUB
 
-void Alicia::sql_exec_stmt( sqlite3_stmt* stmt, int line ) {
+void Alicia::sql_exec_stmt( int stmt_type, int line ) {
 	int rc = 0;
 //     auto rows;
-    for(int row = 0; SQLITE_ROW == (rc = sqlite3_step(stmt)); ++row) {
+    for(int row = 0; SQLITE_ROW == (rc = sqlite3_step(STMT)); ++row) {
 		int col;
 //         auto columns;
-		for(col=0; col<sqlite3_column_count(stmt); col++) {
+		for(col=0; col<sqlite3_column_count(STMT); col++) {
             // Note that by using sqlite3_column_text, sqlite will coerce the value into a string
 //             string k = sqlite3_column_name(stmt, col);
 //             string v = sqlite3_column_text(stmt, col);
-                last_result_set[row][col] = (char*)sqlite3_column_text(stmt,col);
+                last_result_set[row][col] = (char*)sqlite3_column_text(STMT,col);
 //                 printf("%d, %d, %s\n", row, col, 
 //                         last_result_set[row][col]);
 //             columns[k] = v;
@@ -169,62 +117,93 @@ void Alicia::sql_exec_stmt( sqlite3_stmt* stmt, int line ) {
 // 	return rows;
 }
 
-char* Alicia::fetch_one_stmt( sqlite3_stmt* stmt, int line ) {
-	sql_exec_stmt(stmt, line);
+char* Alicia::fetch_one_stmt( int stmt_type, int line ) {
+	sql_exec_stmt(stmt_type, line);
     return last_result_set[0][0];
 }
 
+int Alicia::prepare( int stmt_type, const char *sql ) {
+    int rc = 0;
+    const char *pzTest; 
+    sqlite3_reset(STMT);
+    if( !STMT ) {
+        if ( rc = sqlite3_prepare_v2(
+            conn, sql, 
+            MAX_PREPARE_BYTES, &STMT, &pzTest
+        ) != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't prepare %s on line %d, %s\n", sql, __LINE__, sqlite3_errmsg(conn));
+        }
+    }
+    return rc;
+}
+
 char* Alicia::get( const char* var ) {
-	sqlite3_int64 key = get_key(var);
-    sqlite3_bind_int64(fetch_h, 1, key);
-    return fetch_one_stmt(fetch_h, __LINE__);
+	int key = get_key(var);
+    if(key_exists(key)) {
+        prepare( FETCH, fetch_sql );
+        sqlite3_bind_int(fetch_h, 1, key);
+        return fetch_one_stmt(FETCH, __LINE__);
+    }
+    return NULL;
 }
 
 void Alicia::set( const char* var, const char* val ) {
-    auto key = get_key(var);
-    
-    sqlite3_int64 k = key;
+    if( !conn ) 
+        return;
 
-    auto h = up_h;
+    prepare( INSERT, ins_sql );
+    prepare( UPDATE, up_sql );
+
+    int key = get_key(var);
     if( !key_exists(key) ) {
-        h = ins_h;
-        if( sqlite3_bind_int64(h, 1, k) 
+        if( sqlite3_bind_int(ins_h, 1, key) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
-        if( sqlite3_bind_text(h, 2, var, 
-                strlen(var), SQLITE_STATIC) 
+        if( sqlite3_bind_text(ins_h, 2, var, 
+                strlen(var), 0) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 2 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 2 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
-        if( sqlite3_bind_text(h, 3, val, 
-                strlen(val), SQLITE_STATIC) 
+        if( sqlite3_bind_text(ins_h, 3, val, 
+                strlen(val), 0) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 3 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 3 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
+        sql_exec_stmt(INSERT,__LINE__);
+//         sqlite3_step(ins_h);
     } else {
         
-        if( sqlite3_bind_text(h, 1, var, 
-                strlen(var), SQLITE_STATIC) 
+        if( sqlite3_bind_text(up_h, 1, var, 
+                strlen(var), 0) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 1 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
-        if( sqlite3_bind_text(h, 2, val, 
-                strlen(val), SQLITE_STATIC) 
+        if( sqlite3_bind_text(up_h, 2, val, 
+                strlen(val), 0) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 2 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 2 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
-        if( sqlite3_bind_int64(h, 3, k) 
+        if( sqlite3_bind_int(up_h, 3, key) 
                 != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't bind parameter 3 on line %d\n", __LINE__);
+            fprintf(stderr, "Couldn't bind parameter 3 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
+        sql_exec_stmt(UPDATE,__LINE__);
+//         sqlite3_step(up_h);
     }
-    sql_exec_stmt(h, __LINE__);
+//     sql_exec_stmt(h, __LINE__);
 }
 void Alicia::del( const char* var ) {
-    sqlite3_int64 key = get_key(var);
-    sqlite3_bind_int64(del_h, 1, key);
-    sql_exec_stmt(del_h, __LINE__);
+    int key = get_key(var);
+    prepare( DELETE, del_sql );
+
+    if( sqlite3_bind_int(del_h, 1, key) 
+            != SQLITE_OK ) {
+        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
+    }
+
+    sql_exec_stmt(DELETE, __LINE__);
+//     sqlite3_step(del_h); 
 }
 
 void Alicia::exec( const char* sql ) {

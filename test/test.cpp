@@ -31,14 +31,14 @@ int test_basics() {
 
 	a->del("json_sample");
 	char* s2 = a->get("json_sample");
-	assert( s2 == NULL, "json delete whole" , __LINE__ );
+    assert( s2 == NULL, "json delete whole" , __LINE__ );
 
 	string sql;
 
     t = "5";
-//     string x = "0";
-	sql = "SELECT var + 1 FROM symbol_table WHERE var = 'data'";
+	sql = "SELECT value + 1 FROM symbol_table WHERE var = 'data'";
 	a->exec( sql.c_str() );
+    printf("%s\n", a->last_result_set[0][0]);
 	assert( !strcmp(a->last_result_set[0][0], t.c_str()), "simple addition", __LINE__ );
 
     
