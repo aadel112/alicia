@@ -21,10 +21,12 @@
 #include <algorithm>
 #include <unordered_map>
 #include <regex>
+#include <tuple>
 #include <sqlite3.h>
 
 #define DB_FILE ":memory:"
 // #define DB_FILE "/tmp/tmp.db"
+#define ARRAY_STEP 10240
 #define MAX_PREPARE_BYTES -1 //10240
 #define INT "int"
 #define REAL "real"
@@ -57,6 +59,8 @@ class Alicia {
         sqlite3_stmt* fetch_h;
         sqlite3_stmt* key_h;
 
+        map<int, sqlite3_stmt*> stmt_map;
+
         const char* del_sql = "DELETE FROM symbol_table WHERE key = ?";
         const char* ins_sql ="INSERT INTO symbol_table VALUES(?,?,?)";
         const char* up_sql = "UPDATE symbol_table SET var = ?,value = ? WHERE key = ?";
@@ -68,17 +72,19 @@ class Alicia {
         bool key_exists( int key );
         int prepare( int stmt_type, const char *sql );
         int get_key(const char* var);
-        void sql_fetch( const char* sql, int line );
-        void sql_exec_stmt( int stmt_type, int line );
-        char* fetch_one_stmt( int stmt_type, int line );
-    
+        vector<vector<string>> sql_fetch( const char* sql, int line );
+        vector<vector<string>> sql_exec_stmt( int stmt_type, int line );
+        const char* fetch_one_stmt( int stmt_type, int line );
+        bool compiled_user_stmt(int stmt_key);
+
     public:
-        char* last_result_set[1000][3];
-        
         Alicia();
         ~Alicia();
-        char* get( const char* var );
+        const char* parameterize_exec(const char* sql);
+        vector<tuple<string,string>> get_exec_parameters( const char* sql );
+        
+        const char* get( const char* var );
         void del( const char* var );
         void set( const char* var, const char* val );
-        void exec( const char* sql );
+        vector<vector<string>> exec( const char* sql );
 };

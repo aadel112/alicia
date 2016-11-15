@@ -79,7 +79,8 @@ bool Alicia::key_exists( int key ) {
             != SQLITE_OK ) {
         fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
     }
-    return !strncmp(fetch_one_stmt(KEY, __LINE__), "1", 1);
+    const char* count = fetch_one_stmt(KEY, __LINE__);
+    return !strncmp(count, "1", 1);
 }
 
 //simple, use better versions if there is  a reason
@@ -91,35 +92,146 @@ int Alicia::get_key(const char* var) {
     return h;
 }
 
-void Alicia::sql_fetch( const char* sql, int line ) {} //STUB
+const char* Alicia::parameterize_exec(const char* sql) {
+	regex e ("where([^]\b]\\s*=\\s*[^\\b])+", icase);
+    smatch m;
+    
+    ss.str("");
+    ss << sql;
+    string s = ss.str();
+    ss.str("");
 
-void Alicia::sql_exec_stmt( int stmt_type, int line ) {
-	int rc = 0;
-//     auto rows;
-    for(int row = 0; SQLITE_ROW == (rc = sqlite3_step(STMT)); ++row) {
-		int col;
-//         auto columns;
-		for(col=0; col<sqlite3_column_count(STMT); col++) {
-            // Note that by using sqlite3_column_text, sqlite will coerce the value into a string
-//             string k = sqlite3_column_name(stmt, col);
-//             string v = sqlite3_column_text(stmt, col);
-            last_result_set[row][col] = (char*)sqlite3_column_text(STMT,col);
-//                 printf("%d, %d, %s\n", row, col, 
-//                         last_result_set[row][col]);
-//             columns[k] = v;
+    string rep = regex_replace(s, e, "WHERE $1 = ?");
+    return rep.c_str();
+} 
 
+vector<tuple<string,string>> Alicia::get_exec_parameters( const char* sql ) {
+	vector<tuple<string,string>> v;
+	regex e ("where([^\\b]\\s*=\\s*[^\\b])+", icase);
+    smatch m;
+    
+    ss.str("");
+    ss << sql;
+    string s = ss.str();
+    ss.str("");
+
+	tuple<string,string> t;
+	string s1;
+	string s2;
+	if (regex_search(s, m, e)) {
+		for (int i=1; i<m.size(); ++i) { 
+			ss << m[i];
+			if(i % 2) {
+				s1 = ss.str();
+			}
+			else {
+				s2 = ss.str();
+				t = make_tuple(s1, s2);
+				v.push_back(t);
+		   	}	
+			ss.str("");
 		}
-//         rows.push( columns );
+	}
+	ss.str("");
+
+	return v;
+}
+
+bool Alicia::compiled_user_stmt(int stmt_key) {
+	map<int,sqlite3_stmt*>::const_iterator it = stmt_map.find(stmt_key);
+	return it!=stmt_map.end();
+}
+
+vector<vector<string>> Alicia::sql_fetch( const char* sql, int line ) {
+    int rc = 0;
+	const char *pzTest;    
+	
+	vector<vector<string>> v1;
+    const char* parameterized_sql = parameterize_exec( sql );
+    int stmt_key = get_key(parameterized_sql);
+    
+	sqlite3_stmt* stmt = compiled_user_stmt(stmt_key) ? stmt_map[stmt_key] : NULL;
+    vector<tuple<string,string>> param_list = get_exec_parameters( sql );
+	
+	sqlite3_reset(stmt);
+	if(!stmt or !compiled_user_stmt(stmt_key)) {
+	   if ( rc = sqlite3_prepare_v2(
+            conn, parameterized_sql, 
+            MAX_PREPARE_BYTES, &stmt, &pzTest
+        ) != SQLITE_OK ) {
+            fprintf(stderr, "Couldn't prepare %s on line %d, %s\n", parameterized_sql, __LINE__, sqlite3_errmsg(conn));
+        }
+    }
+    else {
+    	stmt = stmt_map[stmt_key];
+    }
+    int i = 1;
+    for (std::vector<tuple<string, string>>::iterator it = param_list.begin() ; !rc && it != param_list.end(); ++it) {
+        tuple<string, string> t = *it;
+        string col_name = std::get<0>(t);
+        string col_value = std::get<1>(t);
+        
+        if( !strcmp(col_name.c_str(), "key") ) {
+            string::size_type sz;
+            if( sqlite3_bind_int(stmt, i,
+                stoi(col_value, &sz)) != SQLITE_OK ) {
+                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i, __LINE__, sqlite3_errmsg(conn));
+            }
+        }
+        else {
+            if( sqlite3_bind_text(stmt, i, 
+                col_value.c_str(), strlen(col_value.c_str()), 0) 
+                    != SQLITE_OK ) {
+                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i, __LINE__, sqlite3_errmsg(conn));
+            }
+        }
+
+        ++i;
+    }
+
+    int col_count = sqlite3_column_count(stmt);
+    for(int row = 0; !rc && SQLITE_ROW == (rc = sqlite3_step(stmt)); ++row) {
+		vector<string> v2;
+        for(int col=0; col < col_count; ++col) {
+            string v ( (const char*)sqlite3_column_text(stmt, col) );
+            v2.push_back(v);
+		}
+        v1.push_back(v2);
 	}
 	if(SQLITE_DONE != rc) {
 		fprintf(stderr, "Statement didn't finish (%i): '%s', on line %d\n", rc, sqlite3_errmsg(conn), line);
 	}
-// 	return rows;
+    return v1;
 }
 
-char* Alicia::fetch_one_stmt( int stmt_type, int line ) {
-	sql_exec_stmt(stmt_type, line);
-    return last_result_set[0][0];
+vector<vector<string>> Alicia::sql_exec_stmt( int stmt_type, int line ) {
+	int rc = 0;
+    int resize_no = 0;
+    vector<vector<string>> v1;
+    int col_count = sqlite3_column_count(STMT);
+    for(int row = 0; SQLITE_ROW == (rc = sqlite3_step(STMT)); ++row) {
+		vector<string> v2;
+        for(int col=0; col < col_count; ++col) {
+            // Note that by using sqlite3_column_text, sqlite will coerce the value into a string
+//             string k ( (const char*)sqlite3_column_name(STMT, col) );
+            string v ( (const char*)sqlite3_column_text(STMT, col) );
+            v2.push_back(v);
+		}
+        v1.push_back(v2);
+//         if( row + 1 == ARRAY_STEP * (resize_no + 1) ) {
+//             ++resize_no;
+//             v1.resize( ARRAY_STEP * (resize_no + 1) );
+//         }
+	}
+	if(SQLITE_DONE != rc) {
+		fprintf(stderr, "Statement didn't finish (%i): '%s', on line %d\n", rc, sqlite3_errmsg(conn), line);
+	}
+    return v1;
+}
+
+const char* Alicia::fetch_one_stmt( int stmt_type, int line ) {
+	vector<vector<string>> a = sql_exec_stmt(stmt_type, line);
+    return a.size() > 0 ? a[0][0].c_str() : NULL;
 }
 
 int Alicia::prepare( int stmt_type, const char *sql ) {
@@ -137,7 +249,7 @@ int Alicia::prepare( int stmt_type, const char *sql ) {
     return rc;
 }
 
-char* Alicia::get( const char* var ) {
+const char* Alicia::get( const char* var ) {
 	int key = get_key(var);
     if(key_exists(key)) {
         prepare( FETCH, fetch_sql );
@@ -206,11 +318,11 @@ void Alicia::del( const char* var ) {
 //     sqlite3_step(del_h); 
 }
 
-void Alicia::exec( const char* sql ) {
+vector<vector<string>> Alicia::exec( const char* sql ) {
     if( is_simple_exec(sql) ) {
         sql_exec(sql, __LINE__);
     }
     else {
-        sql_fetch(sql, __LINE__);
+        return sql_fetch(sql, __LINE__);
     }
 }
