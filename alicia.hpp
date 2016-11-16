@@ -24,6 +24,8 @@
 #include <tuple>
 #include <sqlite3.h>
 
+#define die() exit(1)
+
 #define DB_FILE ":memory:"
 // #define DB_FILE "/tmp/tmp.db"
 #define ARRAY_STEP 10240
@@ -38,6 +40,14 @@
 #define UPDATE 3
 #define FETCH 4
 #define KEY 5
+
+#define DEFAULT_OUTPUT_FILE "stdout"
+#define DEFAULT_INPUT_FILE "stdin"
+#define DEFAULT_INPUT_TABLE "input_table"
+#define DEFAULT_DELIMITER ","
+#define DEFAULT_ESCAPE "\\"
+#define DEFAULT_RECORD_DELIMITER "\r\n"
+#define DEFAULT_FILE_HEADER "0"
 
 #define STMT (stmt_type == KEY ? key_h \
             : (stmt_type == FETCH ? fetch_h \
@@ -61,6 +71,7 @@ class Alicia {
 
         map<int, sqlite3_stmt*> stmt_map;
 
+
         const char* del_sql = "DELETE FROM symbol_table WHERE key = ?";
         const char* ins_sql ="INSERT INTO symbol_table VALUES(?,?,?)";
         const char* up_sql = "UPDATE symbol_table SET var = ?,value = ? WHERE key = ?";
@@ -68,23 +79,56 @@ class Alicia {
         const char* key_sql = "SELECT COUNT(*) FROM symbol_table WHERE key = ?";
 
         int sql_exec(const char* sql, int line);
+        int sql_exec(string sql, int line);
+        
         bool is_simple_exec( const char* sql );
+        bool is_simple_exec( string sql );
+
         bool key_exists( int key );
+        
         int prepare( int stmt_type, const char *sql );
+        int prepare( int stmt_type, string sql );
+
         int get_key(const char* var);
+        int get_key(string var);
+        
         vector<vector<string>> sql_fetch( const char* sql, int line );
+        vector<vector<string>> sql_fetch( string sql, int line );
+
+
         vector<vector<string>> sql_exec_stmt( int stmt_type, int line );
-        const char* fetch_one_stmt( int stmt_type, int line );
+        string fetch_one_stmt( int stmt_type, int line );
         bool compiled_user_stmt(int stmt_key);
 
     public:
         Alicia();
         ~Alicia();
-        const char* parameterize_exec(const char* sql);
+
+        string UNDEFINED = "undefined";
+
+        string parameterize_exec(const char* sql);
+        string parameterize_exec(string sql);
+
         vector<tuple<string,string>> get_exec_parameters( const char* sql );
+        vector<tuple<string,string>> get_exec_parameters( string sql );
         
-        const char* get( const char* var );
+        int write_out();
+        int read_into();
+
+        string get( const char* var );
+        string get( string var );
+         
         void del( const char* var );
+        void del( string var );
+
+        void truncate( const char* var );
+        void truncate( string var );
+
         void set( const char* var, const char* val );
+        void set( const char* var, string val );
+        void set( string var, const char* val );
+        void set( string var, string val );
+
         vector<vector<string>> exec( const char* sql );
+        vector<vector<string>> exec( string sql );
 };

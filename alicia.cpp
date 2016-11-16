@@ -17,7 +17,8 @@ Alicia::Alicia() {
         << "symbol_table(key)";
     string idx_sql = ss.str();
     ss.str("");
-    string pthreads = "PRAGMA threads = 50";
+    string pfsync = "PRAGMA synchronous = off";
+//     string pthreads = "PRAGMA threads = 50";
     string pdirty = "PRAGMA read_uncomitted = true";
     string pvac = "PRAGMA auto_vaccum = full";
 
@@ -25,12 +26,21 @@ Alicia::Alicia() {
 
     rc = sqlite3_open(DB_FILE, &conn);
     
-    rc = !rc and sql_exec( create_sql.c_str(), __LINE__ ); 
-    rc = !rc and sql_exec( idx_sql.c_str(), __LINE__ );
-    rc = !rc and sql_exec( pthreads.c_str(), __LINE__ ); 
-    rc = !rc and sql_exec( pdirty.c_str(), __LINE__ );
-    rc = !rc and sql_exec( pvac.c_str(), __LINE__ );
-    rc = !rc and sql_exec( stat_sql.c_str(), __LINE__ );
+    rc = !rc and sql_exec( create_sql, __LINE__ ); 
+    rc = !rc and sql_exec( idx_sql, __LINE__ );
+//     rc = !rc and sql_exec( pthreads.c_str(), __LINE__ ); 
+    rc = !rc and sql_exec( pfsync, __LINE__ );
+    rc = !rc and sql_exec( pdirty, __LINE__ );
+    rc = !rc and sql_exec( pvac, __LINE__ );
+    rc = !rc and sql_exec( stat_sql, __LINE__ );
+
+    set("OUTPUT_FILE",DEFAULT_OUTPUT_FILE);
+    set("INPUT_FILE",DEFAULT_INPUT_FILE);
+    set("INPUT_TABLE", DEFAULT_INPUT_TABLE);
+    set("DELIMITER",DEFAULT_DELIMITER);
+    set("ESCAPE",DEFAULT_ESCAPE);
+    set("RECORD_DELIMITER",DEFAULT_RECORD_DELIMITER);
+    set("FILE_HEADER", DEFAULT_FILE_HEADER);
 
 }
 
@@ -53,7 +63,7 @@ Alicia::~Alicia() {
 int Alicia::sql_exec(const char* sql, int line) {
     int rc = 0;
     char *zErrMsg = 0;
-    
+   
     rc = sqlite3_exec(conn, sql, NULL, 0, &zErrMsg);
     if( rc != SQLITE_OK )
         printf("SQLITE_ERROR on line %d: %s\n", line, zErrMsg);
@@ -62,14 +72,22 @@ int Alicia::sql_exec(const char* sql, int line) {
     return rc;
 }
 
+int Alicia::sql_exec(string sql, int line) {
+    return sql_exec(sql.c_str(), line);
+}
+
 bool Alicia::is_simple_exec( const char* sql ) {
-    regex e ("^select ", icase );
+    regex e ("^(select) ", icase );
     smatch m;
     ss.str("");
     ss << sql;
     string s = ss.str(); 
+   
+    return !regex_search( s, m, e );
+}
 
-    return regex_search( s, m, e );
+bool Alicia::is_simple_exec( string sql ) {
+    return is_simple_exec(sql.c_str());
 }
 
 bool Alicia::key_exists( int key ) {
@@ -79,8 +97,8 @@ bool Alicia::key_exists( int key ) {
             != SQLITE_OK ) {
         fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
     }
-    const char* count = fetch_one_stmt(KEY, __LINE__);
-    return !strncmp(count, "1", 1);
+    string count = fetch_one_stmt(KEY, __LINE__);
+    return !strncmp(count.c_str(), "1", 1);
 }
 
 //simple, use better versions if there is  a reason
@@ -92,7 +110,11 @@ int Alicia::get_key(const char* var) {
     return h;
 }
 
-const char* Alicia::parameterize_exec(const char* sql) {
+int Alicia::get_key(string var) {
+    return get_key(var.c_str());
+}
+
+string Alicia::parameterize_exec(const char* sql) {
 	regex e ("where([^]\b]\\s*=\\s*[^\\b])+", icase);
     smatch m;
     
@@ -102,8 +124,12 @@ const char* Alicia::parameterize_exec(const char* sql) {
     ss.str("");
 
     string rep = regex_replace(s, e, "WHERE $1 = ?");
-    return rep.c_str();
+    return rep;
 } 
+
+string Alicia::parameterize_exec(string sql) {
+    return parameterize_exec(sql.c_str());
+}
 
 vector<tuple<string,string>> Alicia::get_exec_parameters( const char* sql ) {
 	vector<tuple<string,string>> v;
@@ -137,6 +163,10 @@ vector<tuple<string,string>> Alicia::get_exec_parameters( const char* sql ) {
 	return v;
 }
 
+vector<tuple<string,string>> Alicia::get_exec_parameters( string sql ) {
+    return get_exec_parameters(sql.c_str());
+}
+
 bool Alicia::compiled_user_stmt(int stmt_key) {
 	map<int,sqlite3_stmt*>::const_iterator it = stmt_map.find(stmt_key);
 	return it!=stmt_map.end();
@@ -147,19 +177,19 @@ vector<vector<string>> Alicia::sql_fetch( const char* sql, int line ) {
 	const char *pzTest;    
 	
 	vector<vector<string>> v1;
-    const char* parameterized_sql = parameterize_exec( sql );
+   
+    string parameterized_sql = parameterize_exec( sql );
     int stmt_key = get_key(parameterized_sql);
-    
 	sqlite3_stmt* stmt = compiled_user_stmt(stmt_key) ? stmt_map[stmt_key] : NULL;
     vector<tuple<string,string>> param_list = get_exec_parameters( sql );
 	
 	sqlite3_reset(stmt);
 	if(!stmt or !compiled_user_stmt(stmt_key)) {
 	   if ( rc = sqlite3_prepare_v2(
-            conn, parameterized_sql, 
+            conn, parameterized_sql.c_str(), 
             MAX_PREPARE_BYTES, &stmt, &pzTest
         ) != SQLITE_OK ) {
-            fprintf(stderr, "Couldn't prepare %s on line %d, %s\n", parameterized_sql, __LINE__, sqlite3_errmsg(conn));
+            fprintf(stderr, "Couldn't prepare %s on line %d, %s\n", parameterized_sql.c_str(), __LINE__, sqlite3_errmsg(conn));
         }
     }
     else {
@@ -190,7 +220,7 @@ vector<vector<string>> Alicia::sql_fetch( const char* sql, int line ) {
     }
 
     int col_count = sqlite3_column_count(stmt);
-    for(int row = 0; !rc && SQLITE_ROW == (rc = sqlite3_step(stmt)); ++row) {
+    for(int row = 0; SQLITE_ROW == (rc = sqlite3_step(stmt)); ++row) {
 		vector<string> v2;
         for(int col=0; col < col_count; ++col) {
             string v ( (const char*)sqlite3_column_text(stmt, col) );
@@ -202,6 +232,10 @@ vector<vector<string>> Alicia::sql_fetch( const char* sql, int line ) {
 		fprintf(stderr, "Statement didn't finish (%i): '%s', on line %d\n", rc, sqlite3_errmsg(conn), line);
 	}
     return v1;
+}
+
+vector<vector<string>> Alicia::sql_fetch( string sql, int line ) {
+    return sql_fetch(sql, line);
 }
 
 vector<vector<string>> Alicia::sql_exec_stmt( int stmt_type, int line ) {
@@ -229,9 +263,9 @@ vector<vector<string>> Alicia::sql_exec_stmt( int stmt_type, int line ) {
     return v1;
 }
 
-const char* Alicia::fetch_one_stmt( int stmt_type, int line ) {
+string Alicia::fetch_one_stmt( int stmt_type, int line ) {
 	vector<vector<string>> a = sql_exec_stmt(stmt_type, line);
-    return a.size() > 0 ? a[0][0].c_str() : NULL;
+    return a.size() > 0 ? a[0][0] : UNDEFINED;
 }
 
 int Alicia::prepare( int stmt_type, const char *sql ) {
@@ -249,14 +283,27 @@ int Alicia::prepare( int stmt_type, const char *sql ) {
     return rc;
 }
 
-const char* Alicia::get( const char* var ) {
+int Alicia::prepare( int stmt_type, string sql ) {
+    return prepare(stmt_type, sql.c_str());
+}
+
+int Alicia::read_into() {} //STUB
+int Alicia::write_out() {} //STUB
+void Alicia::truncate(const char* table) {} //STUB
+void Alicia::truncate(string table) {} //STUB
+
+string Alicia::get( const char* var ) {
 	int key = get_key(var);
     if(key_exists(key)) {
         prepare( FETCH, fetch_sql );
         sqlite3_bind_int(fetch_h, 1, key);
         return fetch_one_stmt(FETCH, __LINE__);
     }
-    return NULL;
+    return UNDEFINED;
+}
+
+string Alicia::get( string var ) {
+    return var.c_str();
 }
 
 void Alicia::set( const char* var, const char* val ) {
@@ -283,7 +330,6 @@ void Alicia::set( const char* var, const char* val ) {
             fprintf(stderr, "Couldn't bind parameter 3 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
         sql_exec_stmt(INSERT,__LINE__);
-//         sqlite3_step(ins_h);
     } else {
         
         if( sqlite3_bind_text(up_h, 1, var, 
@@ -301,21 +347,36 @@ void Alicia::set( const char* var, const char* val ) {
             fprintf(stderr, "Couldn't bind parameter 3 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
         }
         sql_exec_stmt(UPDATE,__LINE__);
-//         sqlite3_step(up_h);
     }
-//     sql_exec_stmt(h, __LINE__);
 }
+
+void Alicia::set( string var, const char* val ) {
+    set(var.c_str(), val);
+}
+
+void Alicia::set( string var, string val ) {
+    set(var.c_str(), val.c_str());
+}
+
+void Alicia::set( const char* var, string val ) {
+    set(var, val.c_str());
+}
+
 void Alicia::del( const char* var ) {
     int key = get_key(var);
     prepare( DELETE, del_sql );
 
     if( sqlite3_bind_int(del_h, 1, key) 
-            != SQLITE_OK ) {
+           != SQLITE_OK ) {
         fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
     }
 
     sql_exec_stmt(DELETE, __LINE__);
 //     sqlite3_step(del_h); 
+}
+
+void Alicia::del( string var ) {
+    del(var.c_str());
 }
 
 vector<vector<string>> Alicia::exec( const char* sql ) {
@@ -325,4 +386,8 @@ vector<vector<string>> Alicia::exec( const char* sql ) {
     else {
         return sql_fetch(sql, __LINE__);
     }
+}
+
+vector<vector<string>> Alicia::exec( string sql ) {
+    return exec(sql.c_str());
 }
