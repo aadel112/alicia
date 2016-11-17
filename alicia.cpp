@@ -287,10 +287,118 @@ int Alicia::prepare( int stmt_type, string sql ) {
     return prepare(stmt_type, sql.c_str());
 }
 
-int Alicia::read_into() {} //STUB
+string Alicia::get_file_contents( const char* ifile ) {
+	// http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
+	std::ifstream t(ifile);
+	t.seekg(0, std::ios::end);
+	size_t size = t.tellg();
+	string buffer(size, ' ');
+	t.seekg(0);
+	t.read(&buffer[0], size);
+	return buffer;
+}
+
+string Alicia::get_file_contents(string s) {
+	return get_file_contents(s.c_str());
+}
+
+//TODO - this is very rudimentary, esp the csv parse
+//write tests to make sure this is sound
+//possibly try to analyze col types and indexes
+//as this is the tnl mosy of the etl will likely happen
+int Alicia::read_into() {
+    string ifile = get("INPUT_FILE");
+    string itbl = get("INPUT_TABLE");
+    string delim = get("DELIMITER");
+    string esc = get("ESCAPE");
+    string rec_delim = get("RECORD_DELIMITER");
+    bool header = !strncmp(get("HEADER"), "1", 1);
+
+    string contents = get_file_contents(ifile);
+
+   	regex e ("([^" + delim + "|" + rec_delim + "]+)(" + rec_delim + ")", icase);
+    smatch m;
+   
+    vector<string> h;
+    vector<vector<string>> v;
+    vector<string> v1;
+    ss.str("");
+    string s;
+    int i = 0;
+    int z = 0;
+	if (regex_search(contents, m, e)) {
+		for (int i=1; i<m.size(); ++i) { 
+			ss << m[i];
+            s = ss.str();
+            if( !strcmp(s.c_str(), delim.c_str())) {
+                if(!i and header) {
+                    h.push_back(s);
+                }
+                else {
+                    v1.push_back(s);
+                }
+            }
+            else {
+                if(!header or i) {
+                    v.push_back(v1);
+                    v1.clear();
+                }
+                ++i;
+            }
+
+            if(!i) {
+                ++z;
+            }
+			ss.str("");
+		}
+	}
+    z = z ? z + 1 : z;
+    if(!header) {
+        for(int i = 1; i < z; ++i) {
+            ss << "$" << i;
+            s = ss.str();
+            h.push_back(s);
+            ss.str("")
+        }
+    }
+    ss << "CREATE TABLE " << input_tbl << "(";
+    //TODO
+    ss << ")";
+    
+
+    return 0;
+
+}
+
 int Alicia::write_out() {} //STUB
-void Alicia::truncate(const char* table) {} //STUB
-void Alicia::truncate(string table) {} //STUB
+
+void Alicia::truncate(const char* table) {
+    prepare( TRUNCATE, truncate_sql );
+    if( sqlite3_bind_text(trnc_h, 1, table, 
+            strlen(table), 0) 
+            != SQLITE_OK ) {
+        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
+    }
+    sql_exec_stmt(TRUNCATE,__LINE__);
+}
+
+void Alicia::truncate(string table) {
+    truncate(table.c_str()); 
+}
+
+void Alicia::drop(const char* table) {
+    prepare( DROP, drop_sql );
+    if( sqlite3_bind_text(drop_h, 1, table, 
+            strlen(table), 0) 
+            != SQLITE_OK ) {
+        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
+    }
+    sql_exec_stmt(DROP,__LINE__);
+}
+
+void Alicia::drop(string table) {
+    drop(table.c_str());
+}
 
 string Alicia::get( const char* var ) {
 	int key = get_key(var);

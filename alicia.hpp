@@ -40,6 +40,8 @@
 #define UPDATE 3
 #define FETCH 4
 #define KEY 5
+#define TRUNCATE 6
+#define DROP 7
 
 #define DEFAULT_OUTPUT_FILE "stdout"
 #define DEFAULT_INPUT_FILE "stdin"
@@ -53,6 +55,8 @@
             : (stmt_type == FETCH ? fetch_h \
             : (stmt_type == UPDATE ? up_h \
             : (stmt_type == DELETE ? del_h \
+            : (stmt_type == TRUNCATE ? trnc_h) \
+            : (stmt_type == DROP ? drop_h) \
             : (ins_h))))\
         )
 
@@ -68,15 +72,19 @@ class Alicia {
         sqlite3_stmt* up_h;
         sqlite3_stmt* fetch_h;
         sqlite3_stmt* key_h;
+        sqlite3_stmt* trnc_h;
+        sqlite3_stmt* drop_h;
+
 
         map<int, sqlite3_stmt*> stmt_map;
-
 
         const char* del_sql = "DELETE FROM symbol_table WHERE key = ?";
         const char* ins_sql ="INSERT INTO symbol_table VALUES(?,?,?)";
         const char* up_sql = "UPDATE symbol_table SET var = ?,value = ? WHERE key = ?";
         const char* fetch_sql = "SELECT value FROM symbol_table WHERE key = ?";
         const char* key_sql = "SELECT COUNT(*) FROM symbol_table WHERE key = ?";
+        const char* truncate_sql = "TRUNCATE ?";
+        const char* drop_sql = "DROP TABLE IF EXISTS ?";
 
         int sql_exec(const char* sql, int line);
         int sql_exec(string sql, int line);
@@ -99,6 +107,9 @@ class Alicia {
         vector<vector<string>> sql_exec_stmt( int stmt_type, int line );
         string fetch_one_stmt( int stmt_type, int line );
         bool compiled_user_stmt(int stmt_key);
+
+        string get_file_contents(const char* ifile);
+        string get_file_contents(string s);
 
     public:
         Alicia();
@@ -123,6 +134,9 @@ class Alicia {
 
         void truncate( const char* var );
         void truncate( string var );
+
+        void drop( const char* var );
+        void drop( string var );
 
         void set( const char* var, const char* val );
         void set( const char* var, string val );

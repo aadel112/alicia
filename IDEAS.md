@@ -12,6 +12,8 @@
         - is really cool I dreaded pythonesque, it's Name Escapes me but it's probably what I'll end up using
     - web framework support
         - I'd like this symbol table to contain something similar to PHP post good session Etc variables
+    - automatic memoiztion
+        - this is actually not far fetched at all with sql, detailed below
 
 =================================================
 other details
@@ -27,5 +29,12 @@ other details
 * the python script will handle the extended SQL, converting it to Alicia, compiling it if needed, and running it
 
 * implementation on the conversion is still entirely decided. I may just keep it in C++ in the alicia Class
+
+* printing will only happen through the write out method and a special PRINT statement
+
+* because SQL has a very limited side effect producing sytax, automatic memoization is very possible
+    - any function that doesn't contain insert update delete drop truncate produces no side effects therefore you should memoize the results
+    - store of the key values in a separate memo table
+    - each function which the store directly in the symbol table can easily be updated to first check the memo table for a result before executing
 
 * development is completely test-driven
