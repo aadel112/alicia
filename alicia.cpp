@@ -115,7 +115,7 @@ int Alicia::get_key(string var) {
 }
 
 string Alicia::parameterize_exec(const char* sql) {
-	regex e ("where([^]\b]\\s*=\\s*[^\\b])+", icase);
+	regex e ("where([^]\\b]\\s*=\\s*[^\\b])+", icase);
     smatch m;
     
     ss.str("");
@@ -309,7 +309,8 @@ string Alicia::get_file_contents(string s) {
 int Alicia::read_into() {
     int rc = 0;
 	const char *pzTest;   
-    regex r(",)$");
+    string strr = ",\\)$";
+    regex r (strr, icase | ECMAScript );
     
     string ifile = get("INPUT_FILE");
     string itbl = get("INPUT_TABLE");
@@ -321,9 +322,13 @@ int Alicia::read_into() {
 
     string contents = get_file_contents(ifile);
 
-   	regex e ("([^" + delim + "|" + rec_delim + "]+)(" + rec_delim + ")", icase);
+    ss << "([^" << delim << "|" << rec_delim << "]+)(" << rec_delim << ")";
+    string stre = ss.str();
+    ss.str("");
+
+   	regex e (stre, icase);
     smatch m;
-   
+
     vector<string> h;
     vector<vector<string>> v;
     vector<string> v1;
