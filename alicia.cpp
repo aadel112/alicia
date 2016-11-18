@@ -322,50 +322,51 @@ int Alicia::read_into() {
 
     string contents = get_file_contents(ifile);
 
-    ss << "([^" << delim << "|" << rec_delim << "]+)(" << rec_delim << ")";
+    ss << "([^" << delim << "|" << rec_delim << "])+([" << rec_delim << "])*";
     string stre = ss.str();
     ss.str("");
 
-   	regex e (stre, icase);
+   	regex e (stre, icase | ECMAScript);
     smatch m;
 
     vector<string> h;
     vector<vector<string>> v;
     vector<string> v1;
-    ss.str("");
-    string s;
+    string s, s2;
     int i = 0;
     int z = 0;
-	if (regex_search(contents, m, e)) {
-		for (int i=1; i<m.size(); ++i) { 
-			ss << m[i];
-            s = ss.str();
-            if( !strcmp(s.c_str(), delim.c_str())) {
-                if(!i and header) {
-                    h.push_back(s);
-                }
-                else {
-                    v1.push_back(s);
-                }
-            }
-            else {
-                if(!header or i) {
-                    v.push_back(v1);
-                    v1.clear();
-                }
-                ++i;
-            }
+	int len = 0;
+    while (regex_search(contents, m, e)) {
+        s = m.str();
+        
+        ss << m[2];
+        s2 = ss.str();
+        ss.str("");
 
-            if(!i) {
-                ++z;
+        if(!i and header) {
+            h.push_back(s);
+        }
+        else {
+            v1.push_back(s);
+        }
+        len = strlen( s2.c_str() );
+        if( len ) {
+            if(!header or i) {
+                v.push_back(v1);
+                v1.clear();
             }
-			ss.str("");
-		}
+            ++i;
+        }
+
+        if(!i) {
+            ++z;
+        }
+        contents = m.suffix();
 	}
     z = z ? z + 1 : z;
     if(!header) {
-        for(int i = 1; i < z; ++i) {
-            ss << "$" << i;
+        for(int i = 0; i < z; ++i) {
+            ss << "f" << i + 1;
             s = ss.str();
             h.push_back(s);
             ss.str("");
@@ -379,6 +380,7 @@ int Alicia::read_into() {
     string create_sql = ss.str();
     ss.str("");
     create_sql = regex_replace(create_sql, r, close_paren);
+    DEBUG("Alicia::read_into: %s ON line %d\n", create_sql.c_str(), __LINE__);
     rc = !rc and sql_exec(create_sql, __LINE__);
 
     ss << "INSERT INTO " << itbl << " VALUES(";
@@ -389,6 +391,7 @@ int Alicia::read_into() {
     string insert_sql = ss.str();
     ss.str("");
     insert_sql = regex_replace(insert_sql, r, close_paren);
+    DEBUG("Alicia::read_into: %s ON line %d\n", insert_sql.c_str(), __LINE__);
 
     sqlite3_stmt* stmt;
     
@@ -411,9 +414,10 @@ int Alicia::read_into() {
 
         for (vector<string>::iterator zt = tmp.begin() ; zt != tmp.end(); ++zt) {
             string s = *zt;
-            if( sqlite3_bind_text(stmt, i, s.c_str(), strlen(s.c_str()), 0) 
+            DEBUG("Alicia::read_into: Binding Param %d as %s ON line %d\n", i + 1, s.c_str(), __LINE__);
+            if( sqlite3_bind_text(stmt, i + 1, s.c_str(), strlen(s.c_str()), 0) 
                     != SQLITE_OK ) {
-                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i, __LINE__, sqlite3_errmsg(conn));
+                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i + 1, __LINE__, sqlite3_errmsg(conn));
             }
             ++i;
         }
@@ -579,7 +583,6 @@ void Alicia::del( const char* var ) {
     }
 
     sql_exec_stmt(DELETE, __LINE__);
-//     sqlite3_step(del_h); 
 }
 
 void Alicia::del( string var ) {

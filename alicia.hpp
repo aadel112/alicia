@@ -27,6 +27,8 @@
 
 #define die() exit(1)
 
+#define __DEBUG__ 1
+#define DEBUG(args...) if(__DEBUG__) { printf(args); }
 #define DB_FILE ":memory:"
 // #define DB_FILE "/tmp/tmp.db"
 #define ARRAY_STEP 10240
@@ -49,7 +51,7 @@
 #define DEFAULT_INPUT_TABLE "input_table"
 #define DEFAULT_DELIMITER ","
 #define DEFAULT_ESCAPE "\\"
-#define DEFAULT_RECORD_DELIMITER "\r\n"
+#define DEFAULT_RECORD_DELIMITER "\\r|\\n"
 #define DEFAULT_FILE_HEADER "0"
 
 #define STMT (stmt_type == KEY ? key_h \
