@@ -1,45 +1,45 @@
 #include "../alicia.hpp"
-// #include <cassert>
+// #include <ctest>
 #define UNDEFINED "undefined"
 static Alicia *a = new Alicia();
-static int assert_failure = 0;
+static int test_failure = 0;
 static stringstream ss;
 
-//implementing custom assert to get msg
-void assert( bool cond, const char* msg, int line ) {
+//implementing custom test to get msg
+void test( bool cond, const char* msg, int line ) {
     if( !cond ) {
         cerr << "Warning!!: test '" << msg << "' failed on line " << line << endl;
-        assert_failure = 1;
+        test_failure = 1;
     }
 }
 
 int test_basics() {
     string t;
 
-    assert(a != NULL, "object creation", __LINE__);
+    test(a != NULL, "object creation", __LINE__);
     
     t = "4";
 
     a->set( "data", "4" );
     string b = a->get( "data" );
-    assert( !strcmp(b.c_str(), t.c_str()), "insert scalar", __LINE__ );
+    test( !strcmp(b.c_str(), t.c_str()), "insert scalar", __LINE__ );
     
     string json = "{ a: \"4\", b: \"5\", c: { 0: 1}}";
     a->set( "json_sample", json.c_str() );
     string s = a->get( "json_sample" );
-    assert( !strcmp(json.c_str(), s.c_str()), "json insert", __LINE__ );
+    test( !strcmp(json.c_str(), s.c_str()), "json insert", __LINE__ );
 
 	a->del("json_sample");
 	string s2 = a->get("json_sample");
-    assert( !strcmp(s2.c_str(),UNDEFINED), "json delete whole" , __LINE__ );
+    test( !strcmp(s2.c_str(),UNDEFINED), "json delete whole" , __LINE__ );
 	
     string sql;
     t = "5";
 	sql = "SELECT value + 1 FROM symbol_table WHERE var = 'data'";
 	auto v = a->exec( sql.c_str() );
-	assert( v.size() > 0 && !strcmp(v[0][0].c_str(), t.c_str()), "simple addition", __LINE__ );
+	test( v.size() > 0 && !strcmp(v[0][0].c_str(), t.c_str()), "simple addition", __LINE__ );
     
-    return assert_failure;
+    return test_failure;
 }
 
 int test_file_io() {
@@ -56,23 +56,23 @@ int test_file_io() {
 
     a->read_into();
     auto v = a->exec(sql);
-    assert( v.size() > 10 && !strcmp(v[3][3].c_str(), "3, 3"),  "enclosed csv and size", __LINE__ );
+    test( v.size() > 10 && !strcmp(v[3][3].c_str(), "3, 3"),  "enclosed csv and size", __LINE__ );
 
     string file2 = "out/test_csv.csv";
     a->set("OUTPUT_FILE", file2);
-    a->write_out();
+    a->write_out("select * from " + it);
     auto fp =  popen("diff out/test_csv.csv examples/test_csv.csv", "r");
     stringstream ss;
     ss << fp;
     pclose(fp);
     string s = ss.str();
-    assert(!s.length(), "io diff", __LINE__ );
+    test(!s.length(), "io diff", __LINE__ );
 
     a->truncate(it);
     v = a->exec(sql);
-    assert( !v.size(), "drop file", __LINE__ );
+    test( !v.size(), "drop file", __LINE__ );
     
-    return assert_failure;
+    return test_failure;
 }
 
 int test_json_ext() {
@@ -81,28 +81,28 @@ int test_json_ext() {
     string json = "{ a: \"4\", b: \"5\", c: { 0: 1}}";
     a->set( "json_sample", json.c_str() );
     string s = a->get( "json_sample[a]" );
-    assert( !strcmp(s.c_str(),t.c_str()), "json get by object key", __LINE__ );
+    test( !strcmp(s.c_str(),t.c_str()), "json get by object key", __LINE__ );
 
     t = "1";
     string s2 = a->get( "json_sample[c][0]" );
-    assert( !strcmp( s.c_str(), t.c_str()), "json get by object key advanced", __LINE__ );
+    test( !strcmp( s.c_str(), t.c_str()), "json get by object key advanced", __LINE__ );
 
     t = "new";
     a->set("json_sample[c][1]", "new");
     string s3 = a->get("json_sample[c][1]");
-    assert( !strcmp(s.c_str(), t.c_str()), "json insert new object key advanced", __LINE__ );
+    test( !strcmp(s.c_str(), t.c_str()), "json insert new object key advanced", __LINE__ );
    
 	a->del("json_sample[c][1]");
 	string s4 = a->get("json_sample[c][1]");
-    assert( !strcmp(s.c_str(), UNDEFINED), "json delete advanced", __LINE__ );
+    test( !strcmp(s.c_str(), UNDEFINED), "json delete advanced", __LINE__ );
 
-	return assert_failure;
+	return test_failure;
 }
 
 int test_functions() {
 	//TODO	
 
-    return assert_failure;
+    return test_failure;
 }
 
 int main(int argc, char** argv) {

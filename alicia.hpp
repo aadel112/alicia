@@ -20,6 +20,7 @@
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
+#include <boost/algorithm/string/join.hpp>
 #include <regex>
 #include <tuple>
 #include <sqlite3.h>
@@ -55,9 +56,9 @@
             : (stmt_type == FETCH ? fetch_h \
             : (stmt_type == UPDATE ? up_h \
             : (stmt_type == DELETE ? del_h \
-            : (stmt_type == TRUNCATE ? trnc_h) \
-            : (stmt_type == DROP ? drop_h) \
-            : (ins_h))))\
+            : (stmt_type == TRUNCATE ? trnc_h \
+            : (stmt_type == DROP ? drop_h \
+            : (ins_h))))))\
         )
 
 using namespace std;
@@ -123,7 +124,8 @@ class Alicia {
         vector<tuple<string,string>> get_exec_parameters( const char* sql );
         vector<tuple<string,string>> get_exec_parameters( string sql );
         
-        int write_out();
+        int write_out(string sql);
+        int write_out(const char* sql);
         int read_into();
 
         string get( const char* var );

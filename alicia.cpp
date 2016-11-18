@@ -307,12 +307,17 @@ string Alicia::get_file_contents(string s) {
 //possibly try to analyze col types and indexes
 //as this is the tnl mosy of the etl will likely happen
 int Alicia::read_into() {
+    int rc = 0;
+	const char *pzTest;   
+    regex r(",)$");
+    
     string ifile = get("INPUT_FILE");
     string itbl = get("INPUT_TABLE");
     string delim = get("DELIMITER");
     string esc = get("ESCAPE");
     string rec_delim = get("RECORD_DELIMITER");
-    bool header = !strncmp(get("HEADER"), "1", 1);
+    bool header = !strncmp(get("HEADER").c_str(), "1", 1);
+    string close_paren = ")";
 
     string contents = get_file_contents(ifile);
 
@@ -358,19 +363,108 @@ int Alicia::read_into() {
             ss << "$" << i;
             s = ss.str();
             h.push_back(s);
-            ss.str("")
+            ss.str("");
         }
     }
-    ss << "CREATE TABLE " << input_tbl << "(";
-    //TODO
+    ss << "CREATE TABLE IF NOT EXISTS " << itbl << "(";
+    for (vector<string>::iterator it = h.begin() ; it != h.end(); ++it) {
+        ss << *it << " text,";
+    }
     ss << ")";
+    string create_sql = ss.str();
+    ss.str("");
+    create_sql = regex_replace(create_sql, r, close_paren);
+    rc = !rc and sql_exec(create_sql, __LINE__);
+
+    ss << "INSERT INTO " << itbl << " VALUES(";
+    for (vector<string>::iterator it = h.begin() ; it != h.end(); ++it) {
+        ss << "?,";
+    }
+    ss << ")";
+    string insert_sql = ss.str();
+    ss.str("");
+    insert_sql = regex_replace(insert_sql, r, close_paren);
+
+    sqlite3_stmt* stmt;
     
+    if ( rc = sqlite3_prepare_v2(
+        conn, insert_sql.c_str(), 
+        MAX_PREPARE_BYTES, &stmt, &pzTest
+    ) != SQLITE_OK ) {
+        fprintf(stderr, "Couldn't prepare %s on line %d, %s\n", insert_sql.c_str(), __LINE__, sqlite3_errmsg(conn));
+    }
+    
+    if(rc)
+        return rc;
+    else
+        rc = SQLITE_DONE;
 
-    return 0;
+    for (vector<vector<string>>::iterator it = v.begin() ; SQLITE_DONE == rc and it != v.end(); ++it) {
+        vector<string> tmp = *it;
+        int i = 0;
+        sqlite3_reset(stmt);
 
+        for (vector<string>::iterator zt = tmp.begin() ; zt != tmp.end(); ++zt) {
+            string s = *zt;
+            if( sqlite3_bind_text(stmt, i, s.c_str(), strlen(s.c_str()), 0) 
+                    != SQLITE_OK ) {
+                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i, __LINE__, sqlite3_errmsg(conn));
+            }
+            ++i;
+        }
+        rc = sqlite3_step(stmt);
+    }
+	if(SQLITE_DONE != rc) {
+		fprintf(stderr, "Statement didn't finish (%i): '%s', on line %d\n", rc, sqlite3_errmsg(conn), __LINE__);
+	}
+    else {
+        rc = 0;
+    }
+
+    return rc;
 }
 
-int Alicia::write_out() {} //STUB
+int Alicia::write_out( const char* sql ) {
+    int rc = 0;
+    if(is_simple_exec(sql)) { 
+        fprintf(stderr, "SQL is not output valid on line %d\n", __LINE__);
+        return -1;
+    }
+
+    string outfile = get("OUTPUT_FILE");
+    string delim = get("DELIMITER");
+    string esc = get("ESCAPE");
+    string rec_delim = get("RECORD_DELIMITER");
+    bool header = !strncmp(get("HEADER").c_str(), "1", 1);
+    string out = "stdout";
+    auto results = sql_fetch(sql, __LINE__);
+
+    if(outfile.compare(out)) {
+        ofstream f (outfile);
+        if (!f.is_open()) {
+            fprintf(stderr, "Couldn't open %s on line %d\n", outfile.c_str(), __LINE__);
+            return -2;
+        }
+        for (vector<vector<string>>::iterator it = results.begin() ; it != results.end(); ++it) {
+            vector<string> tmp = *it;
+            string joined = boost::algorithm::join(tmp, delim.c_str());
+            f << joined << rec_delim;
+        }
+        f.close();
+    }
+    else {
+        for (vector<vector<string>>::iterator it = results.begin() ; it != results.end(); ++it) {
+            vector<string> tmp = *it;
+            string joined = boost::algorithm::join(tmp, delim.c_str());
+            cout << joined << rec_delim;
+        }
+    }
+    return rc;
+}
+
+int Alicia::write_out( string sql ) {
+    return write_out(sql.c_str());
+}
 
 void Alicia::truncate(const char* table) {
     prepare( TRUNCATE, truncate_sql );
