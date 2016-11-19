@@ -127,8 +127,8 @@ int main(int argc, char** argv) {
     // unit tests
     rc = !rc && test_basics();
     rc = !rc && test_file_io();
-    rc = !rc && test_json_ext();
     rc = !rc && test_functions();
+    rc = !rc && test_json_ext();
 
 
     return rc;
