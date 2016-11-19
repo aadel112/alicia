@@ -13,6 +13,26 @@ void test( bool cond, const char* msg, int line ) {
     }
 }
 
+string run_cmd(const char* cmd) {
+	FILE *in;
+    char buff[512];
+	string ret;
+
+	if(!(in = popen(cmd, "r"))){
+        ret = "NULL";
+		return ret;
+    }
+	ss.str("");
+    while(fgets(buff, sizeof(buff), in)!=NULL){
+        ss << buff;
+    }
+    pclose(in);
+	ret = ss.str();
+	ss.str("");
+	return ret;
+}
+
+
 int test_basics() {
     string t;
 
@@ -56,17 +76,13 @@ int test_file_io() {
 
     a->read_into();
     auto v = a->exec(sql);
-    test( v.size() > 10 && !strcmp(v[3][3].c_str(), "3, 3"),  "enclosed csv and size", __LINE__ );
+    test( !strcmp(v[3][3].c_str(), " 3 3"),  "enclosed csv and size", __LINE__ );
 
     string file2 = "out/test_csv.csv";
     a->set("OUTPUT_FILE", file2);
     a->write_out("select * from " + it);
-    auto fp =  popen("diff out/test_csv.csv examples/test_csv.csv", "r");
-    stringstream ss;
-    ss << fp;
-    pclose(fp);
-    string s = ss.str();
-    test(!s.length(), "io diff", __LINE__ );
+    auto diff =  run_cmd("diff out/test_csv.csv examples/test_csv.csv");
+    test(!diff.length(), "io diff", __LINE__ );
 
     a->truncate(it);
     v = a->exec(sql);

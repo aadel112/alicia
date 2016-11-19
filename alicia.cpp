@@ -224,6 +224,7 @@ vector<vector<string>> Alicia::sql_fetch( const char* sql, int line ) {
 		vector<string> v2;
         for(int col=0; col < col_count; ++col) {
             string v ( (const char*)sqlite3_column_text(stmt, col) );
+//             DEBUG("FETCHED: '%s'\n", v.c_str());
             v2.push_back(v);
 		}
         v1.push_back(v2);
@@ -298,6 +299,25 @@ string Alicia::get_file_contents( const char* ifile ) {
 	return buffer;
 }
 
+// http://stackoverflow.com/questions/3418231/replace-part-of-a-string-with-another-string
+bool replace(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
+void replaceAll(std::string& str, const std::string& from, const std::string& to) {
+    if(from.empty())
+        return;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+}
+
 string Alicia::get_file_contents(string s) {
 	return get_file_contents(s.c_str());
 }
@@ -335,7 +355,7 @@ int Alicia::read_into() {
     string s, s2;
     int i = 0;
     int z = 0;
-	int len = 0;
+	int nl  = 0;
     while (regex_search(contents, m, e)) {
         s = m.str();
         
@@ -343,14 +363,18 @@ int Alicia::read_into() {
         s2 = ss.str();
         ss.str("");
 
+        nl = strlen( s2.c_str() ) > 0 and !s2.compare(rec_delim);
+//         printf("%s-%s\n", s.c_str(), s2.c_str());
+        if(nl) {
+            s.pop_back();
+        }
         if(!i and header) {
             h.push_back(s);
         }
         else {
             v1.push_back(s);
         }
-        len = strlen( s2.c_str() );
-        if( len ) {
+        if(nl) {
             if(!header or i) {
                 v.push_back(v1);
                 v1.clear();
@@ -409,19 +433,17 @@ int Alicia::read_into() {
 
     for (vector<vector<string>>::iterator it = v.begin() ; SQLITE_DONE == rc and it != v.end(); ++it) {
         vector<string> tmp = *it;
-        int i = 0;
-        sqlite3_reset(stmt);
 
-        for (vector<string>::iterator zt = tmp.begin() ; zt != tmp.end(); ++zt) {
-            string s = *zt;
-            DEBUG("Alicia::read_into: Binding Param %d as %s ON line %d\n", i + 1, s.c_str(), __LINE__);
-            if( sqlite3_bind_text(stmt, i + 1, s.c_str(), strlen(s.c_str()), 0) 
+        for( int i = 1; i <= tmp.size(); ++i ) {
+            auto c = tmp[i-1].c_str();
+            DEBUG("Alicia::read_into: Binding Param %d as %s ON line %d\n", i, c, __LINE__);
+            if( sqlite3_bind_text(stmt, i, c, strlen(c), 0) 
                     != SQLITE_OK ) {
-                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i + 1, __LINE__, sqlite3_errmsg(conn));
+                fprintf(stderr, "Couldn't bind parameter %d on line %d, %s\n", i, __LINE__, sqlite3_errmsg(conn));
             }
-            ++i;
         }
         rc = sqlite3_step(stmt);
+        sqlite3_reset(stmt);
     }
 	if(SQLITE_DONE != rc) {
 		fprintf(stderr, "Statement didn't finish (%i): '%s', on line %d\n", rc, sqlite3_errmsg(conn), __LINE__);
@@ -454,6 +476,7 @@ int Alicia::write_out( const char* sql ) {
             fprintf(stderr, "Couldn't open %s on line %d\n", outfile.c_str(), __LINE__);
             return -2;
         }
+
         for (vector<vector<string>>::iterator it = results.begin() ; it != results.end(); ++it) {
             vector<string> tmp = *it;
             string joined = boost::algorithm::join(tmp, delim.c_str());
