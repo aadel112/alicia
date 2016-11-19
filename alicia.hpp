@@ -87,7 +87,8 @@ class Alicia {
         const char* up_sql = "UPDATE symbol_table SET var = ?,value = ? WHERE key = ?";
         const char* fetch_sql = "SELECT value FROM symbol_table WHERE key = ?";
         const char* key_sql = "SELECT COUNT(*) FROM symbol_table WHERE key = ?";
-        const char* truncate_sql = "TRUNCATE ?";
+        //https://www.techonthenet.com/sqlite/truncate.php - according to this, no truncate, delete is truncate
+        const char* truncate_sql = "DELETE FROM ?";
         const char* drop_sql = "DROP TABLE IF EXISTS ?";
 
         int sql_exec(const char* sql, int line);

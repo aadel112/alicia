@@ -499,13 +499,10 @@ int Alicia::write_out( string sql ) {
 }
 
 void Alicia::truncate(const char* table) {
-    prepare( TRUNCATE, truncate_sql );
-    if( sqlite3_bind_text(trnc_h, 1, table, 
-            strlen(table), 0) 
-            != SQLITE_OK ) {
-        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
-    }
-    sql_exec_stmt(TRUNCATE,__LINE__);
+    ss << "DELETE FROM " <<  table;
+    string sql = ss.str();
+    sql_exec(sql, __LINE__);
+    ss.str("");
 }
 
 void Alicia::truncate(string table) {
@@ -513,13 +510,10 @@ void Alicia::truncate(string table) {
 }
 
 void Alicia::drop(const char* table) {
-    prepare( DROP, drop_sql );
-    if( sqlite3_bind_text(drop_h, 1, table, 
-            strlen(table), 0) 
-            != SQLITE_OK ) {
-        fprintf(stderr, "Couldn't bind parameter 1 on line %d, %s\n", __LINE__, sqlite3_errmsg(conn));
-    }
-    sql_exec_stmt(DROP,__LINE__);
+    ss << "DROP TABLE IF EXISTS " <<  table;
+    string sql = ss.str();
+    sql_exec(sql, __LINE__);
+    ss.str("");
 }
 
 void Alicia::drop(string table) {
