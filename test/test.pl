@@ -59,7 +59,19 @@ sub test_file_io{
     return $lrc;
 }
 
-sub test_functions{}
+sub test_functions{
+    $f = 'examples/func.sql';
+    $fun_txt = `$f`;
+    chomp $fun_txt;
+    $a->create_function( $fun_txt );
+
+    $sql = "SELECT add_one(4)";
+    $r = $a->exec($sql);
+
+    assert($r->[0][0] == 5, "io no diff", __LINE__);
+
+    return $lrc;
+}
 
 sub test_json{
 

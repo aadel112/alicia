@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-requires 'JSON';
+requires 'JSON::XS';
 requires 'Data::Dumper';
 requires 'DBI';
 requires 'DBD::SQLite';

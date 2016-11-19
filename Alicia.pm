@@ -11,7 +11,7 @@ package Alicia;
 use DBI;
 use Text::CSV_XS qw( csv );
 use Digest::CRC qw(crc32);
-use JSON;
+use JSON::XS;
 use Data::Dumper;
 use File::Basename;
 use vars '$VERSION';
@@ -70,6 +70,9 @@ my $fetch = sub {
 
     return $print ? $self : \@arr;
 };
+
+my $get_sql_fun_name = sub {};
+my $get_sql_fun_body = sub {};
 
 sub new {
     my $class = shift;
@@ -255,3 +258,28 @@ sub write {
     return $self->exec($sql, \%op);
 }
 
+sub create_function {
+    my $self = shift;
+    my $code = shift;
+    my $is_perl = shift;
+
+    if( !$is_perl ) {
+        my $fnm = $self->$get_sql_fun_name($code);
+#         my $params = $self->$get_sql_fun_params($code);
+        my $body = $self->$get_sql_fun_body($code);
+        $self->{conn}->sqlite_create_function(
+            $fnm, -1, $body
+        );
+    }
+    else {
+        my $ocode = $code;
+        if( $code =~ m/sub\s+([^sub\s]+)\s*{/o ) {
+            my $fnm = $1;
+            $code =~ s/sub\s+$fnm\s*{/sub {/o;
+
+            $self->{conn}->sqlite_create_function(
+                $fnm, -1, $code
+            );
+        }
+    }
+}
