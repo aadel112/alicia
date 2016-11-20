@@ -348,9 +348,11 @@ sub create_function {
         if( $code =~ m/sub\s+([^sub\s]+)\s*{/o ) {
             my $fnm = $1;
             $code =~ s/sub\s+$fnm\s*{/sub {/o;
-
+            my $fnb = $code;
+            my $body = eval $fnb;
+#             $self->$DEBUG("PLFN: $fnm : $fnb\n", __LINE__);
             $self->{conn}->sqlite_create_function(
-                $fnm, -1, $code
+                $fnm, -1, $body
             );
         }
     }

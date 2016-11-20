@@ -74,10 +74,28 @@ sub test_functions{
     $sql = "SELECT fibonacci(10)";
     $r = $a->exec($sql);
 #     print Dumper($r);
-    assert($r->[0][0] == 55, "fibonacci func", __LINE__);
+#     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
 
+    $f = 'examples/funs.pl';
+    create_funfile_pl($f);
+
+    $sql = "SELECT trim(_1) from it";
+    $r = $a->exec($sql);
+    assert($r->[0][0] eq "0 1", "pl func 1", __LINE__);
 
     return $lrc;
+}
+
+
+
+sub create_funfile_pl {
+    $f = $_[0];
+    $fun_txt = `cat $f`;
+    chomp $fun_txt;
+    @arr = $fun_txt =~ /PL:([^END]+)END/og;
+    foreach my $f (@arr) {
+        $a->create_function( $f, 1 );
+    }
 }
 
 sub create_funfile {
