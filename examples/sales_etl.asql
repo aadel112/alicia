@@ -1,0 +1,51 @@
+LOAD LIBRARY IF EXISTS lib/alicia.core.apl;
+
+READ FILE examples/sales.linux.csv INTO in;
+CREATE index idx01 ON in(f1, f3);
+
+CREATE TABLE product_dim (
+    id int primary key autoincrememt,
+    name text
+);
+CREATE index prod01 ON product_dim(name);
+
+CREATE TABLE payment_dim (
+    id int primary key autoincrement,
+    name text
+);
+CREATE index payd01 ON payment_dim(name);
+
+CREATE TABLE sales_facts (
+   transaction_date text,
+   product_id int,
+   price real,
+   payment_type_id int,
+   name,
+   city,
+   state,
+   country,
+   account_created text,
+   last_login text,
+   latitude real,
+   longitude real
+);
+
+ANALYZE;
+
+INSERT INTO payment_dim SELECT rowid(), distinct f3 FROM in;
+
+INSERT INTO product_dim SELECT rowid(), distinct f1 FROM in;
+
+INSERT INTO sales_facts
+SELECT f0, prod.id, f2, payd.id, trim(f4), 
+    trim(f5), trim(f6), trim(f7), trim(f8),
+    trim(f9), trim(f10), trim(f11)
+FROM in a, product_dim prod, payment_dim payd
+WHERE fo NOT LIKE '%date'
+AND a.f1 = prod.name
+AND a.f3 = payd.name;
+
+WRITE FILE out/sales_facts.csv FROM sales_facts;
+WRITE FILE out/product_dim.csv FROM product_dim;
+WRITE FILE out/payment_dim.csv FROM payment_dim;
+
