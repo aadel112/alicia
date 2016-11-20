@@ -65,6 +65,7 @@ sub test_functions{
 
     $sql = "SELECT add_one(4)";
     $r = $a->exec($sql);
+#     print Dumper($r);
     assert($r->[0][0] == 5, "add_one func", __LINE__);
 
     $f = 'examples/fibonacci.sql';
@@ -72,6 +73,7 @@ sub test_functions{
 
     $sql = "SELECT fibonacci(10)";
     $r = $a->exec($sql);
+#     print Dumper($r);
     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
 
 

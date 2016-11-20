@@ -131,7 +131,11 @@ my $get_sql_fun_body = sub {
     $code =~ s/\s*SET\s+//iog;
     $code =~ s/@/\$/gio;
     $code =~ s/([\r\n]+)/;$1/g;
-    
+    $code =~ s/case\s*//iog;
+    $code =~ s/when(.+)then/if\($1\) {/gio;
+    $code =~ s/end/}/gio;
+    $code =~ s/else/} else {/iog;
+    $code =~ s/({|});/$1/go;
     $code = lc $code;
 
     return $code;
@@ -330,10 +334,11 @@ sub create_function {
     if( !$is_perl ) {
         my $fnm = $self->$get_sql_fun_name($code);
         my $fnb = $self->$get_sql_fun_body($code);
-        $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
+#         $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
         my $body = sub { 
             eval $fnb;
         };
+#         print Dumper($body);
         $self->{conn}->sqlite_create_function(
             $fnm, -1, $body
         );
