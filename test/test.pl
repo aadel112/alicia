@@ -68,11 +68,11 @@ sub test_functions{
 #     print Dumper($r);
     assert($r->[0][0] == 5, "add_one func", __LINE__);
 
-    $f = 'examples/fibonacci.sql';
-    create_funfile($f);
-
-    $sql = "SELECT fibonacci(10)";
-    $r = $a->exec($sql);
+#     $f = 'examples/fibonacci.sql';
+#     create_funfile($f);
+# 
+#     $sql = "SELECT fibonacci(10)";
+#     $r = $a->exec($sql);
 #     print Dumper($r);
 #     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
 
@@ -83,6 +83,13 @@ sub test_functions{
     $r = $a->exec($sql);
     assert($r->[0][0] eq "0 1", "pl func 1", __LINE__);
 
+    $sql = "SELECT fibonacci(10)";
+    $r = $a->exec($sql);
+#     print Dumper($r);
+    assert($r->[0][0] == 55, "fibonacci func", __LINE__);
+
+   
+
     return $lrc;
 }
 
@@ -90,7 +97,7 @@ sub test_functions{
 
 sub create_funfile_pl {
     $f = $_[0];
-    $fun_txt = `cat $f`;
+    $fun_txt = `cat $f | grep -v ^#`;
     chomp $fun_txt;
     @arr = $fun_txt =~ /PL:([^END]+)END/og;
     foreach my $f (@arr) {

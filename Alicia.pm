@@ -344,10 +344,9 @@ sub create_function {
         );
     }
     else {
-        my $ocode = $code;
-        if( $code =~ m/sub\s+([^sub\s]+)\s*{/o ) {
+        if( $code =~ m/sub\s+([^{\s]+)\s*{/o ) {
             my $fnm = $1;
-            $code =~ s/sub\s+$fnm\s*{/sub {/o;
+            $code =~ s/sub\s+[^{]+{/sub {/o;
             my $fnb = $code;
             my $body = eval $fnb;
 #             $self->$DEBUG("PLFN: $fnm : $fnb\n", __LINE__);
