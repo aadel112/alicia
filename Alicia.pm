@@ -18,6 +18,11 @@ use vars '$VERSION';
 
 __PACKAGE__->main( @ARGV ) unless caller();
 
+my $t = sub {
+    my $self = shift;
+    return $self;
+};
+
 my $DEBUG = sub {
     my $self = shift;
     my $msg = shift;
@@ -149,6 +154,12 @@ sub new {
     my $csv = Text::CSV_XS->new({ binary => 1 });
 
     my $dbh = DBI->connect("dbi:SQLite:dbname=$file","","");
+#     my $o = DBD::SQLite::compile_options();
+#     print Dumper($o);
+#     $dbh->sqlite_enable_load_extension(1);
+# 	$sth = $dbh->prepare("select load_extension('vendor/libjson1')");
+# 	$sth->execute(); 
+
     my $create_sql = "
     CREATE TABLE IF NOT EXISTS _ST (
     key int,
@@ -301,7 +312,7 @@ sub read {
             my @cols = ();
             for( my $z = 0; $z < scalar @$row; ++$z ) {
                 push @params, '?';
-                push @cols, "_$z text";
+                push @cols, "f$z text";
             }
             $csql .= (( join ",", @cols ) . ")");
             $self->{conn}->do($csql);
