@@ -18,6 +18,16 @@ use vars '$VERSION';
 
 __PACKAGE__->main( @ARGV ) unless caller();
 
+my $DEBUG = sub {
+    my $self = shift;
+    my $msg = shift;
+    my $ln = shift;
+
+    if( $self->{debug} ) {
+        print STDERR "$msg, ON LINE $ln\n";
+    }
+};
+
 my $key_exists = sub {
     my $self = shift;
     my $key = shift;
@@ -71,8 +81,61 @@ my $fetch = sub {
     return $print ? $self : \@arr;
 };
 
-my $get_sql_fun_name = sub {};
-my $get_sql_fun_body = sub {};
+my $get_sql_fun_name = sub {
+    my $self = shift;
+    my $code = shift;
+
+    if( $code =~ m/create\s+function\s+([^\(\s]+)\s*/io ){
+        return $1;
+    }
+    return undef;
+};
+
+my $get_sql_fun_params = sub {
+    my $self = shift;
+    my $code = shift;
+
+    my @params = ();
+    my $fn = $self->$get_sql_fun_name($code);
+#     print "'$fn'\n";
+    my @a = $code =~ /$fn\s*\(([^\)]*)\)/id;
+#     if($code =~ m/$fn\(([^\)]*)\)/iod) {
+#     print Dumper(@a);
+    foreach $a (@a) {
+#         print "HERE";
+        my $list = $1;
+#         print $list."\n";
+        my @p = split /,/, $list;
+        foreach my $p ( @p ) {
+            $p =~ s/^\s+|\s+$//;
+            push @params, $p;
+        }
+    }
+    return @params;
+};
+
+my $get_sql_fun_body = sub {
+    my $self = shift;
+    my $code = shift;
+
+    my $ocode = $code;
+    my @params = $self->$get_sql_fun_params($code);
+
+    for(my $i = 0; $i < scalar @params; ++$i) {
+        $code =~ s/$params[$i]/\$_[$i]/ig;
+    }
+    $code =~ s/.*\s+function\s+.*\)[\r\n]*//iog;
+    $code =~ s/.*as\s+begin\s+//imo;
+    $code =~ s/(\s+)end$/$1/io;
+
+    $code =~ s/\s*SET\s+//iog;
+    $code =~ s/@/\$/gio;
+    $code =~ s/([\r\n]+)/;$1/g;
+    
+    $code = lc $code;
+
+    return $code;
+};
 
 sub new {
     my $class = shift;
@@ -119,6 +182,7 @@ sub new {
         hdls => \%handle_hash,
         csv => $csv,
         verbose => 1,
+        debug => 1,
         version_major => '0',
         version_minor => '1'
     };
@@ -265,8 +329,11 @@ sub create_function {
 
     if( !$is_perl ) {
         my $fnm = $self->$get_sql_fun_name($code);
-#         my $params = $self->$get_sql_fun_params($code);
-        my $body = $self->$get_sql_fun_body($code);
+        my $fnb = $self->$get_sql_fun_body($code);
+        $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
+        my $body = sub { 
+            eval $fnb;
+        };
         $self->{conn}->sqlite_create_function(
             $fnm, -1, $body
         );
@@ -282,4 +349,5 @@ sub create_function {
             );
         }
     }
+    return $self;
 }

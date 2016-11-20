@@ -61,16 +61,28 @@ sub test_file_io{
 
 sub test_functions{
     $f = 'examples/func.sql';
-    $fun_txt = `$f`;
-    chomp $fun_txt;
-    $a->create_function( $fun_txt );
+    create_funfile($f);
 
     $sql = "SELECT add_one(4)";
     $r = $a->exec($sql);
+    assert($r->[0][0] == 5, "add_one func", __LINE__);
 
-    assert($r->[0][0] == 5, "io no diff", __LINE__);
+    $f = 'examples/fibonacci.sql';
+    create_funfile($f);
+
+    $sql = "SELECT fibonacci(10)";
+    $r = $a->exec($sql);
+    assert($r->[0][0] == 55, "fibonacci func", __LINE__);
+
 
     return $lrc;
+}
+
+sub create_funfile {
+    $f = $_[0];
+    $fun_txt = `cat $f`;
+    chomp $fun_txt;
+    $a->create_function( $fun_txt );
 }
 
 sub test_json{

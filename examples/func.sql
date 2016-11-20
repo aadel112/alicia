@@ -1,9 +1,5 @@
-CREATE FUNCTION StripWWWandCom (@input)
+CREATE FUNCTION add_one (@input)
 AS BEGIN
-    DECLARE @Work
-    SET @Work = @Input
-    SET @Work = REPLACE(@Work, 'www.', '')
-    SET @Work = REPLACE(@Work, '.com', '')
-
+    SET @Work = @Input + 1
     RETURN @work
 END
