@@ -4,9 +4,10 @@ use Alicia;
 use Data::Dumper;
 
 $lrc = 0;
-# $a = new Alicia();
-$a = new Alicia('tmp.db');
+$a = new Alicia();
+# $a = new Alicia('tmp.db');
 # print Dumper( $a );
+$a->{debug} = 1;
 
 main();
 
@@ -60,7 +61,6 @@ sub test_file_io{
     chomp $wc;
     assert($res == $wc, "io no diff", __LINE__);
 
-    $a->drop('it');
 
     return $lrc;
 }
@@ -105,6 +105,10 @@ sub test_functions{
 #     $sql = "SELECT t()";
 #     $r = $a->exec($sql);
 #     print $r->[0][0] ."\n";
+
+
+    $a->drop('it');
+    
     return $lrc;
 }
 

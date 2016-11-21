@@ -1,4 +1,4 @@
-#/usr/bin/env perl
+#!/usr/bin/env perl
 
 # from  https://metacpan.org/pod/DBD::SQLite#dbh-sqlite_create_function-name-argc-code_ref
 
@@ -16,7 +16,6 @@ use Data::Dumper;
 use File::Basename;
 use vars '$VERSION';
 
-__PACKAGE__->main( @ARGV ) unless caller();
 
 my $DEBUG = sub {
     my $self = shift;
@@ -30,7 +29,7 @@ my $DEBUG = sub {
 
 #TODO handle sep_char, quote_char, etc.
 my $parse_read_instr = sub {
-    my $self - shift;
+    my $self = shift;
     my $word_ref = shift;
     my $stmt_no = shift;
     my %instr = ();
@@ -77,7 +76,7 @@ my $parse_read_instr = sub {
 my $parse_write_instr = sub {
     #specific handle
     #WRITE FILE out/sales_facts.csv FROM sales_facts;
-    my $self - shift;
+    my $self = shift;
     my $word_ref = shift;
     my $stmt_no = shift;
     my %instr = ();
@@ -122,7 +121,7 @@ my $parse_write_instr = sub {
 my $parse_load_instr = sub {
     #specific handle
     #WRITE FILE out/sales_facts.csv FROM sales_facts;
-    my $self - shift;
+    my $self = shift;
     my $word_ref = shift;
     my $stmt_no = shift;
     my %instr = ();
@@ -313,6 +312,8 @@ my $get_sql_fun_body = sub {
     return $code;
 };
 
+__PACKAGE__->main( @ARGV ) unless caller();
+
 sub new {
     my $class = shift;
     my $file = shift;
@@ -321,12 +322,6 @@ sub new {
     my $csv = Text::CSV_XS->new({ binary => 1 });
 
     my $dbh = DBI->connect("dbi:SQLite:dbname=$file","","");
-#     my $o = DBD::SQLite::compile_options();
-#     print Dumper($o);
-#     $dbh->sqlite_enable_load_extension(1);
-# 	$sth = $dbh->prepare("select load_extension('vendor/libjson1')");
-# 	$sth->execute(); 
-
     my $create_sql = "
     CREATE TABLE IF NOT EXISTS _ST (
     key int,
@@ -365,7 +360,7 @@ sub new {
         csv => $csv,
         object => '$__ALICIA__',
         verbose => 1,
-        debug => 1,
+        debug => 0,
         version_major => '0',
         version_minor => '1'
     };
@@ -560,7 +555,7 @@ sub read {
     my $sql = "INSERT INTO $table VALUES(";
 
     return $self if( not -s $file );
-
+    
     my $sth;
     my $csv = $self->{csv};
     if( defined $read_options ) {
@@ -589,7 +584,6 @@ sub read {
         ++$i;
     }
     close $fh;
-
     return $self;
 }
 
