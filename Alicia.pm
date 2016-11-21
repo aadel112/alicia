@@ -1,8 +1,73 @@
 #!/usr/bin/env perl
 
+
+=head1 NAME
+
+Alicia - SQL As a high speed, all-purpose programming language
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 METHODS
+
+=over 12
+
+=item C<new>
+
+Returns a new Alicia object, initializes the symbol table, called _ST, creates its statements, indexes it; sets up an SQLite database as the memory-store. This is optimal for many reasons.
+
+=over 4
+
+SQLite stores its data in a hyper-compressed format. Of course, it dependa on your point-of-reference, but just comparing a perl hash to the same content dumped in SQLite; there's no comparison. I've seen instances where one algorithm was projected to take 62% of system RAM for over two days. The same algorithm re-implemented in SQLite and indexed and analyzed takes 20 minutes, and takes 0.1% of system RAM. In another case, one algorithm took about 2 and a half minutes, and over 40% of system RAM. Reimplenting the same algorithm in SQLite took 0.1% of memory, and ran in under 5 seconds.
+
+So, memory is one great reason to use Alicia. Another is the immense speed of SQLite. When all concurrnency needs are ignored, and all persistence is removed, what do you have left? A very mature C project that is  basically a drop-in replacement for a data structure. 
+
+Using perl's DBD::SQLite driver is a no-brainer compared to other implementatios, at this point. It's compiled with optimizations (-O2). It's got JSON, regex extensions built into it, and it allows function and aggregate creation.
+
+=back
+
+=item C<main>
+
+Called by the CLI, initializes a new Alicia object, parses, and executes the Alicia script or stdin.
+
+=item C<parse_and_execute_statements>
+
+parses the very limited set of Alicia specific instructions, and executes them as appropriate
+
+=item C<set>
+
+is called by the execution if the instruction "SET('something', 'value'). You can nest these, such as SET('five', GET('three') + 2). This is pretty highly optimized, as it's very limited. These values are all stored in the symbol_table (_ST). 
+
+=item C<get>
+
+is called by the execution if the instruction GET('something') is used. These can be nested, for example, GET(GET('value references something in _ST'))
+
+=item C<drop>
+
+Drops a table
+
+=item C<truncate>
+
+Truncates a table
+
+=item C<exec>
+
+executes any sql that isn't in the limited instruction set
+
+=item C<read>
+
+reads a delimited file
+
+=item C<write>
+
+=item C<create_function>
+
+=back
+
+=cut
+
 # from  https://metacpan.org/pod/DBD::SQLite#dbh-sqlite_create_function-name-argc-code_ref
-
-
 
 package Alicia;
 # use strict;
@@ -11,8 +76,8 @@ package Alicia;
 use DBI;
 use Text::CSV_XS qw( csv );
 use Digest::CRC qw(crc32);
-use JSON::XS;
-use Data::Dumper;
+# use JSON::XS;
+# use Data::Dumper;
 use File::Basename;
 use vars '$VERSION';
 
@@ -98,9 +163,6 @@ my $parse_write_instr = sub {
         if( $i - $offset == 1 and uc $e ne 'FILE' ) {
             die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
         }
-#         elsif( $i - $offset == 2 and ( ! -w $e ) ) {
-#             die("Check file permissions for $e on statememt $stmt_no\n");
-#         }
         elsif( $i - $offset == 3 and uc $e ne 'FROM' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be FROM\n");
         }
@@ -468,10 +530,6 @@ sub parse_and_execute_statements {
     return $self;
 }
 
-sub get_statements {
-    my $self = shift;
-    return $self->{statements};
-}
 
 sub set {
     my $self = shift;
