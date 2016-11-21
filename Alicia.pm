@@ -77,7 +77,7 @@ use DBI;
 use Text::CSV_XS qw( csv );
 use Digest::CRC qw(crc32);
 # use JSON::XS;
-# use Data::Dumper;
+use Data::Dumper;
 use File::Basename;
 use vars '$VERSION';
 
@@ -374,6 +374,22 @@ my $get_sql_fun_body = sub {
     return $code;
 };
 
+my $register_lib = sub {
+    my $self = shift;
+    my $lib = shift;
+
+    do $lib if( -e $lib );
+
+    foreach my $f ( keys %AliciaFuncs ) {
+
+       $self->{conn}->sqlite_create_function(
+            $f, $AliciaFuncs{$f}, eval ('\&' . $f)
+        );
+    }
+
+    return $self;
+};
+
 __PACKAGE__->main( @ARGV ) unless caller();
 
 sub new {
@@ -416,12 +432,17 @@ sub new {
         del => $dbh->prepare($del_sql),
         fetch => $dbh->prepare($fetch_sql)
     );
+
+    my $corelib = 'lib/alicia.c';
+    $self->$register_lib($corelib);
+
     my $self = {
         conn => $dbh,
         hdls => \%handle_hash,
         csv => $csv,
-        object => '$__ALICIA__',
         verbose => 1,
+        core_lib => $corelib,
+        core_lib_hash => \%AliciaFuncs,
         debug => 0,
         version_major => '0',
         version_minor => '1'
@@ -519,6 +540,7 @@ sub parse_and_execute_statements {
             my $a = $self->$get_set($h{FILE});
             $self->$DEBUG("Do '$a'", __LINE__);
             do $a if( -e $a );
+#             print Dumper(&lower); die();
         }
         else {
             my $a = $self->$get_set($h{STMT});

@@ -6,6 +6,7 @@ requires 'DBI';
 requires 'DBD::SQLite';
 requires 'Text::CSV_XS';
 requires 'Digest::CRC';
+requires 'Inline::C';
 
 # on 'test' => sub {
 #     requires 'Test::Simple'; 

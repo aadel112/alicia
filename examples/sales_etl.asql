@@ -1,4 +1,4 @@
-LOAD lib/alicia.core.apl;
+--LOAD lib/alicia.c;
 
 READ FILE examples/sales.linux.csv INTO itbl;
 CREATE index idx_itbl_01 ON itbl(f1, f3);

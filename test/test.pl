@@ -7,7 +7,7 @@ $lrc = 0;
 $a = new Alicia();
 # $a = new Alicia('tmp.db');
 # print Dumper( $a );
-$a->{debug} = 1;
+# $a->{debug} = 1;
 
 main();
 
@@ -93,6 +93,11 @@ sub test_functions{
     $r = $a->exec($sql);
 #     print Dumper($r);
     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
+    
+    $sql = "SELECT lower('AAA')";
+    $r = $a->exec($sql);
+    assert($r->[0][0] eq 'aaa', "C functions work", __LINE__);
+
 #     $sql = "SELECT fibonacci(30)";
 #     $r = $a->exec($sql);
 #     print $r->[0][0] ."\n";
