@@ -94,7 +94,7 @@ sub test_functions{
 #     print Dumper($r);
     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
     
-    $sql = "SELECT lower('AAA')";
+    $sql = "SELECT LOWER('AAA')";
     $r = $a->exec($sql);
     assert($r->[0][0] eq 'aaa', "C functions work", __LINE__);
 
