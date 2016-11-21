@@ -16,8 +16,9 @@ sub main {
     $rc += $rc + test_file_io();
     $rc += $rc + test_functions();
     $rc += $rc + test_json(); # using base json
-    $rc += $rc + test_os();
-    $rc += $rc + test_extended_agg();
+    $rc += $rc + test_script1();
+#     $rc += $rc + test_os();
+#     $rc += $rc + test_extended_agg();
     if( not $rc ) {
         print "All Tests Passed!\n";
     }
@@ -101,6 +102,26 @@ sub test_functions{
 #     $sql = "SELECT t()";
 #     $r = $a->exec($sql);
 #     print $r->[0][0] ."\n";
+    return $lrc;
+}
+
+sub test_script1 {
+
+    $script = 'examples/sales_etl.asql';
+    $a->parse_and_execute_statements($script);
+
+    @ofs = (
+        'out/sales_facts.csv',
+        'out/product_dim.csv',
+        'out/payment_dim.csv'
+    );
+    $c = 0;
+    foreach my $f(@ofs) {
+        $c += 1 if( -s $f );
+    }
+    assert($c == scalar @ofs, "All output", __LINE__);
+
+
     return $lrc;
 }
 

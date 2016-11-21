@@ -1,4 +1,4 @@
-LOAD LIBRARY IF EXISTS lib/alicia.core.apl;
+LOAD lib/alicia.core.apl;
 
 READ FILE examples/sales.linux.csv INTO in;
 CREATE index idx01 ON in(f1, f3);
@@ -32,9 +32,9 @@ CREATE TABLE sales_facts (
 
 ANALYZE;
 
-INSERT INTO payment_dim SELECT rowid(), distinct f3 FROM in;
+INSERT INTO payment_dim (name) SELECT  distinct f3 FROM in;
 
-INSERT INTO product_dim SELECT rowid(), distinct f1 FROM in;
+INSERT INTO product_dim (name) SELECT  distinct f1 FROM in;
 
 INSERT INTO sales_facts
 SELECT f0, prod.id, f2, payd.id, trim(f4), 

@@ -18,11 +18,6 @@ use vars '$VERSION';
 
 __PACKAGE__->main( @ARGV ) unless caller();
 
-my $t = sub {
-    my $self = shift;
-    return $self;
-};
-
 my $DEBUG = sub {
     my $self = shift;
     my $msg = shift;
@@ -30,6 +25,176 @@ my $DEBUG = sub {
 
     if( $self->{debug} ) {
         print STDERR "$msg, ON LINE $ln\n";
+    }
+};
+
+#TODO handle sep_char, quote_char, etc.
+my $parse_read_instr = sub {
+    my $self - shift;
+    my $word_ref = shift;
+    my $stmt_no = shift;
+    my %instr = ();
+
+    #expects a specific pattern
+    #read file examples/sales.linux.csv into in;
+    my $len = scalar @$word_ref;
+    my $offset = 0;
+    my $started = 0;
+    my $syntax_error_token = -1;
+    die("Syntax Error on statememt $stmt_no, not enough tokens\n") unless( $len >= 5 );
+    for( my $i = 0; $i < $len; ++$i ) {
+        if( !$started and uc $word_ref->[$i] ne 'READ' ) {
+            ++$offset;
+            next;
+        }
+        elsif( !$started ) {
+            $started = 1;
+        }
+        my $e = $word_ref->[$i];
+        if( $i - $offset == 1 and uc $e ne 'file' ) {
+            die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
+        }
+        elsif( $i - $offset == 2 and ( ! -e $e or ! -r $e ) ) {
+            die("Check file permissions on statememt $stmt_no\n");
+        }
+        elsif( $i - $offset == 3 and uc $e ne 'into' ) {
+            die("Syntax Error on statememt $stmt_no, token $e should be INTO\n");
+        }
+
+    }
+    my $file = $word_ref->[$offset+2];
+    my $in = $word_ref->[$offset+4];
+
+    %instr = (
+        INSTR=> 'READ',
+        FILE => $file,
+        TABLE => $in
+    );
+
+    return \%instr;
+};
+
+my $parse_write_instr = sub {
+    #specific handle
+    #WRITE FILE out/sales_facts.csv FROM sales_facts;
+    my $self - shift;
+    my $word_ref = shift;
+    my $stmt_no = shift;
+    my %instr = ();
+
+    my $len = scalar @$word_ref;
+    my $offset = 0;
+    my $started = 0;
+    my $syntax_error_token = -1;
+    die("Syntax Error on statememt $stmt_no, not enough tokens\n") unless( $len >= 5 );
+    for( my $i = 0; $i < $len; ++$i ) {
+        if( !$started and uc $word_ref->[$i] ne 'WRITE' ) {
+            ++$offset;
+            next;
+        }
+        elsif( !$started ) {
+            $started = 1;
+        }
+        my $e = $word_ref->[$i];
+        if( $i - $offset == 1 and uc $e ne 'FILE' ) {
+            die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
+        }
+        elsif( $i - $offset == 2 and ( ! -w $e ) ) {
+            die("Check file permissions on statememt $stmt_no\n");
+        }
+        elsif( $i - $offset == 3 and uc $e ne 'FROM' ) {
+            die("Syntax Error on statememt $stmt_no, token $e should be FROM\n");
+        }
+
+    }
+    my $file = $word_ref->[$offset+2];
+    my $out = $word_ref->[$offset+4];
+
+    %instr = (
+        INSTR => 'WRITE',
+        FILE => $file,
+        TABLE => $out
+    );
+
+    return \%instr;
+};
+
+my $parse_load_instr = sub {
+    #specific handle
+    #WRITE FILE out/sales_facts.csv FROM sales_facts;
+    my $self - shift;
+    my $word_ref = shift;
+    my $stmt_no = shift;
+    my %instr = ();
+
+    my $len = scalar @$word_ref;
+    my $offset = 0;
+    my $started = 0;
+    my $syntax_error_token = -1;
+    die("Syntax Error on statememt $stmt_no, not enough tokens\n") unless( $len >= 2 );
+    for( my $i = 0; $i < $len; ++$i ) {
+        if( !$started and uc $word_ref->[$i] ne 'LOAD' ) {
+            ++$offset;
+            next;
+        }
+        elsif( !$started ) {
+            $started = 1;
+        }
+        my $e = $word_ref->[$i];
+        if( $i - $offset == 1 and ( !-e $e or ! -r $e ) ) {
+            die("Check file permissions on statememt $stmt_no\n");
+        }
+    }
+    my $file = $word_ref->[$offset+1];
+
+    %instr = (
+        INSTR => 'LOAD',
+        FILE => $file
+    );
+    return \%instr;
+};
+
+my $get_set = sub {
+    my $self = shift;
+    my $str = shift;
+
+    my @it = ('GET', 'SET');
+    for my $s (@it) {
+        while( my $sidx = index($s, $str) >= 0 ) {
+            my @a = split //, $str;
+            my $la = scalar @a;
+
+            my $break = 0;
+            my @stack = ();
+            my $args = '';
+            for(my $i=$sidx+3;$i<$la && !$break;++$i){
+                if($a[$i] == '('){
+                    push @stack, $a[$i];
+                }
+                elsif($a[$i] == ')' && scalar @stack) {
+                    pop @stack;
+                }
+                elsif($a[$i] !~ m/\s/io){
+                    $break = 1;
+                }
+
+                if(scalar @stack) {
+                    $args .= $a[$i];
+                }
+            }
+            if( $args =~ m/\s*$s\s*\(/g ) {
+                $args = $self->$get_set($args);
+            }
+            else {
+                if($s eq 'GET') {
+                    $args = $self->get($args);
+                }
+                else {
+                    $args = $self->set($args);
+                }
+            }
+            $str = substr( $str, 0, $sidx ) . $args . substr($str, $i);
+        }
     }
 };
 
@@ -196,6 +361,7 @@ sub new {
         conn => $dbh,
         hdls => \%handle_hash,
         csv => $csv,
+        object => '$__ALICIA__',
         verbose => 1,
         debug => 1,
         version_major => '0',
@@ -209,8 +375,106 @@ sub new {
 
 sub main { #TODO - help and error checking
     my $script_name = basename( $0 );
-    my $self = Alicia->new( $ARGV[0] );
+    my $self = Alicia->new();
+    $self->parse_and_execute_statements( $ARGV[0] );
 } 
+
+sub parse_and_execute_statements {
+    my $self = shift;
+    my $file = shift;
+
+    my $code;
+    my $ocode;
+    if( $file ) {
+       open my $h, '<', $file;
+       $code = do { local $/; <$h> };
+       close $h;
+    }
+    else { #stdin
+        $code = do { local $/; <STDIN> };
+    }
+
+    $code =~ s/\-\-.*$//g;
+    
+    my @cmds = split /;/, $code;
+
+    my $instr_ref;
+    my @ins = ();
+    for(my $i = 0; $i<scalar @cmds; ++$i) {
+        my $line = $cmds[$i];
+        $line =~ s/^\s+|\s+$//g;
+        next unless( $line );
+
+        my @words = split /\s+/, $line;
+        my $fword = uc $words[0];
+
+        $print = 0;
+        if( $fword eq 'PRINT' ) {
+            $print = 1;
+            @words = reverse @words;
+            @words = pop @words;
+            next unless( scalar @words );
+
+            @words = reverse @words;
+            $fword = uc $words[0];
+        }
+
+        #simple set of instructions
+        if( $fword eq 'READ' ) {
+            $instr_ref = $self->$parse_read_instr(\@words, $i + 1);
+        }
+        elsif( $fword eq 'WRITE' ) {
+            $instr_ref = $self->$parse_write_instr(\@words, $i + 1);
+        }
+        elsif( $fword eq 'LOAD' ) {
+            $instr_ref = $self->$parse_load_instr(\@words, $i + 1);
+        }
+        else {
+            my %h = (
+                INSTR => 'STMT',
+                STMT => $line
+            );
+            $instr_ref = \%h;
+        }
+
+        push @ins, $instr_ref;
+    }
+
+
+    foreach my $s ( @ins ) {
+        my %h = %$s;
+
+        if( $h{INSTR} eq 'READ' ) {
+            my $a1 = $self->$get_set($h{FILE});
+            my $a2 = $self->$get_set($h{TABLE});
+            $self->$DEBUG("Read '$a1', '$a2'", __LINE__);
+            $self->read($a1, $a2);        
+        }
+        elsif( $h{INSTR} eq 'WRITE' ) {
+            my $a1 = $self->$get_set($h{FILE});
+            my $a2 = $self->$get_set($h{TABLE});
+            $self->$DEBUG("Write '$a1', '$a2'", __LINE__);
+            $self->write($a1, $a2);
+        }
+        elsif( $h{INSTR} eq 'LOAD' ) {
+            my $a = $self->$get_set($h{FILE});
+            $self->$DEBUG("Do '$a'", __LINE__);
+            do $a if( -e $a );
+        }
+        else {
+            my $a = $self->$get_set($h{STMT});
+            $self->$DEBUG("Exec '$a'", __LINE__);
+            $self->exec($a);
+        }
+    }
+
+    return $self;
+}
+
+sub get_statements {
+    my $self = shift;
+    return $self->{statements};
+}
 
 sub set {
     my $self = shift;
