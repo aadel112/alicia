@@ -57,13 +57,43 @@ executes any sql that isn't in the limited instruction set
 
 =item C<read>
 
-reads a delimited file
+reads a delimited file into a table, where the fields will be all text, and will be named like f0, f1, f2, etc.
 
 =item C<write>
+
+writes a table to a delimited file.
 
 =item C<create_function>
 
 =back
+
+=head1 LICENSE
+
+MIT License
+
+Copyright (c) 2016 Aaron Adel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=head1 AUTHOR
+
+Aaron Adel -L<http://aadel112.com>, -L<https://github.com/aadel112>
 
 =cut
 
@@ -386,6 +416,7 @@ my $register_lib = sub {
             $f, $AliciaFuncs{$f}, eval ('\&' . $f)
         );
     }
+    undef %AliciaFuncs;
 
     return $self;
 };
@@ -433,7 +464,7 @@ sub new {
         fetch => $dbh->prepare($fetch_sql)
     );
 
-    my $corelib = 'lib/alicia.c';
+    my $corelib = 'lib/libAlicia.c';
     $self->$register_lib($corelib);
 
     my $self = {
@@ -442,7 +473,6 @@ sub new {
         csv => $csv,
         verbose => 1,
         core_lib => $corelib,
-        core_lib_hash => \%AliciaFuncs,
         debug => 0,
         version_major => '0',
         version_minor => '1'
@@ -539,8 +569,7 @@ sub parse_and_execute_statements {
         elsif( $h{INSTR} eq 'LOAD' ) {
             my $a = $self->$get_set($h{FILE});
             $self->$DEBUG("Do '$a'", __LINE__);
-            do $a if( -e $a );
-#             print Dumper(&lower); die();
+            $self->$register_lib($a);
         }
         else {
             my $a = $self->$get_set($h{STMT});
