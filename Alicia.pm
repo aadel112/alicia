@@ -51,13 +51,13 @@ my $parse_read_instr = sub {
             $started = 1;
         }
         my $e = $word_ref->[$i];
-        if( $i - $offset == 1 and uc $e ne 'file' ) {
+        if( $i - $offset == 1 and uc $e ne 'FILE' ) {
             die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
         }
         elsif( $i - $offset == 2 and ( ! -e $e or ! -r $e ) ) {
-            die("Check file permissions on statememt $stmt_no\n");
+            die("Check file permissions for $e on statememt $stmt_no\n");
         }
-        elsif( $i - $offset == 3 and uc $e ne 'into' ) {
+        elsif( $i - $offset == 3 and uc $e ne 'INTO' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be INTO\n");
         }
 
@@ -99,9 +99,9 @@ my $parse_write_instr = sub {
         if( $i - $offset == 1 and uc $e ne 'FILE' ) {
             die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
         }
-        elsif( $i - $offset == 2 and ( ! -w $e ) ) {
-            die("Check file permissions on statememt $stmt_no\n");
-        }
+#         elsif( $i - $offset == 2 and ( ! -w $e ) ) {
+#             die("Check file permissions for $e on statememt $stmt_no\n");
+#         }
         elsif( $i - $offset == 3 and uc $e ne 'FROM' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be FROM\n");
         }
@@ -142,7 +142,7 @@ my $parse_load_instr = sub {
         }
         my $e = $word_ref->[$i];
         if( $i - $offset == 1 and ( !-e $e or ! -r $e ) ) {
-            die("Check file permissions on statememt $stmt_no\n");
+            die("Check file permissions for $e on statememt $stmt_no\n");
         }
     }
     my $file = $word_ref->[$offset+1];
@@ -162,6 +162,7 @@ my $get_set = sub {
     for my $s (@it) {
         while( my $sidx = index($s, $str) >= 0 ) {
             my @a = split //, $str;
+
             my $la = scalar @a;
 
             my $break = 0;
@@ -196,6 +197,7 @@ my $get_set = sub {
             $str = substr( $str, 0, $sidx ) . $args . substr($str, $i);
         }
     }
+    return $str;
 };
 
 my $key_exists = sub {
@@ -513,7 +515,7 @@ sub drop {
     my $self = shift;
     my $table = shift;
 
-    $self->{conn}->do("DROP TABLE OF EXISTS $table");
+    $self->{conn}->do("DROP TABLE IF EXISTS $table");
 
     return $self;
 }

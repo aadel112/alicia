@@ -1,7 +1,7 @@
 LOAD lib/alicia.core.apl;
 
-READ FILE examples/sales.linux.csv INTO in;
-CREATE index idx01 ON in(f1, f3);
+READ FILE examples/sales.linux.csv INTO it;
+CREATE index idx01 ON it(f1, f3);
 
 CREATE TABLE product_dim (
     id int primary key autoincrememt,
@@ -32,15 +32,15 @@ CREATE TABLE sales_facts (
 
 ANALYZE;
 
-INSERT INTO payment_dim (name) SELECT  distinct f3 FROM in;
+INSERT INTO payment_dim (name) SELECT  distinct f3 FROM it;
 
-INSERT INTO product_dim (name) SELECT  distinct f1 FROM in;
+INSERT INTO product_dim (name) SELECT  distinct f1 FROM it;
 
 INSERT INTO sales_facts
 SELECT f0, prod.id, f2, payd.id, trim(f4), 
     trim(f5), trim(f6), trim(f7), trim(f8),
     trim(f9), trim(f10), trim(f11)
-FROM in a, product_dim prod, payment_dim payd
+FROM it a, product_dim prod, payment_dim payd
 WHERE fo NOT LIKE '%date'
 AND a.f1 = prod.name
 AND a.f3 = payd.name;

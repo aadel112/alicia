@@ -4,8 +4,8 @@ use Alicia;
 use Data::Dumper;
 
 $lrc = 0;
-$a = new Alicia();
-# $a = new Alicia('tmp.db');
+# $a = new Alicia();
+$a = new Alicia('tmp.db');
 # print Dumper( $a );
 
 main();
@@ -59,6 +59,9 @@ sub test_file_io{
     $wc = `cat $fi | wc -l`;
     chomp $wc;
     assert($res == $wc, "io no diff", __LINE__);
+
+    $a->drop('it');
+
     return $lrc;
 }
 
@@ -106,6 +109,7 @@ sub test_functions{
 }
 
 sub test_script1 {
+
 
     $script = 'examples/sales_etl.asql';
     $a->parse_and_execute_statements($script);
