@@ -98,6 +98,10 @@ sub test_functions{
     $r = $a->exec($sql);
     assert($r->[0][0] eq 'aaa', "C functions work", __LINE__);
 
+    $sql = "SELECT LEFTS( 'aaccc', 2 )";
+    $r = $a->exec($sql);
+    print Dumper($r);
+
 #     $sql = "SELECT fibonacci(30)";
 #     $r = $a->exec($sql);
 #     print $r->[0][0] ."\n";

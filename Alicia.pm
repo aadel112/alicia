@@ -321,6 +321,7 @@ my $fetch = sub {
     my $sql = shift;
     my $print_options = shift;
 
+#     print "$sql\n";
     my $sth = $self->{conn}->prepare($sql);
     $sth->execute;
     
@@ -408,14 +409,22 @@ my $register_lib = sub {
     my $self = shift;
     my $lib = shift;
 
-    do $lib if( -e $lib );
-
+    require $lib if( -e $lib );
     foreach my $f ( keys %AliciaFuncs ) {
 
-       $self->{conn}->sqlite_create_function(
-            $f, $AliciaFuncs{$f}, eval ('\&' . $f)
+#         print left('aaa', 1);
+#         print "$f\n";
+#         print Dumper(\&lower );
+#         my $s = sub { left(@_) };
+#         print Dumper( $self->{conn} );
+       
+        my $s = eval '\&' . $f;
+        $self->{conn}->sqlite_create_function(
+            $f, -1, $s
+             #eval ('\&' . $f)
         );
     }
+#     die();
     undef %AliciaFuncs;
 
     return $self;
@@ -465,7 +474,6 @@ sub new {
     );
 
     my $corelib = 'lib/libAlicia.c';
-    $self->$register_lib($corelib);
 
     my $self = {
         conn => $dbh,
@@ -477,6 +485,8 @@ sub new {
         version_major => '0',
         version_minor => '1'
     };
+    $self->$register_lib($corelib);
+    
     $self->{version} = "$self->{version_major}.$self->{version_minor}";
     $VERSION = $self->{version};
 

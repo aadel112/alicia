@@ -4,103 +4,82 @@ use Inline C => << '...';
 //================
 
 // not a complete list, but getting ideas from postgres
-// https://www.postgresql.org/docs/9.1/static/functions-string.html
+// https:#www.postgresql.org/docs/9.1/static/functions-string.html
 
-char* lower( char* str ) {
+char* slower( char* str ) {
 	int i;
-	for(i = 0; strlen(str); ++i){
-		str[i] = tolower(str[i]);
+
+    for(i = 0; i < strlen(str); ++i){
+        str[i] = tolower(str[i]);
 	}
 	return str;
 }
 
-char* upper( char* str ) {
+char* supper( char* str ) {
 	int i;
-	for(i = 0; strlen(str); ++i){
+	for(i = 0; i < strlen(str); ++i){
 		str[i] = toupper(str[i]);
 	}
 	return str;
 }
 
-//this craftt answer taken from 
-// http://stackoverflow.com/questions/784417/reversing-a-string-in-c
-char* reverse(char * str) {
-	if (str) {
-		char * end = str + strlen(str) - 1;
-
-		// swap the values in the two given variables
-		// XXX: fails when a and b refer to same memory location
-#   define XOR_SWAP(a,b) do\
-		{\
-			a ^= b;\
-			b ^= a;\
-			a ^= b;\
-		} while (0)
-
-		// walk inwards from both ends of the string, 
-		// swapping until we get to the middle
-		while (str < end) {
-			XOR_SWAP(*str, *end);
-			str++;
-			end--;
-		}
-#   undef XOR_SWAP
-	}
-	return str;
-}
-
-char* left(char* str, int len) {
-	if(strlen(str) >= len) {
-		str[len+1] = '\0';
-	}
-	return str;
-}
-
-char* right(char* str, int len) {
-	reverse(str);
-	if(strlen(str) >= len) {
-		str[len+1] = '\0';
-	}
-	return str;
-}
-
-int index(char* needle, char* haystack) {
-    int l = strlen(haystack);
-    int sl = strlen(needle);
-    int i, ret = -1;
-    int p, pa, f = 0;
-
-    if( !sl || !l || sl > l ) {
-        return ret;
-    }
-
-    for(i=0;i<l;++i) {
-        if(haystack[i+p] == needle[p]) {
-            pa = 1;
-            ++p;
-        }
-        else {
-            pa = 0;
-            p = 0;
-        }
-
-        if( p >= sl ) {
-            return i - p;
-        }
-    }
-    return ret;
-}
-
-char* substr(char* str, int start, int len) {
+char* sreverse(char* str) {
     int l = strlen(str);
-    int pos = start + len > l ? l : start + len;
-    str[pos-1] = '\0';
+    int i;
+    char* tmp = (char*)malloc(l);
+
+    for(i=0;i<l;++i){
+        tmp[i] = str[l-i-1];
+    }
+    tmp[i] = '\0';
+    strcpy(str,tmp);
+    free(tmp);
+
     return str;
 }
 
-char* uc_words(char* str) { 
+char* sleft(char* str, int len) {
+	if(strlen(str) > len) {
+		str[len] = '\0';
+	}
+	return str;
+}
+
+char* sright(char* str, int len) {
+	return sreverse(sleft(sreverse(str), len));
+}
+
+int sindex(char* haystack, char* needle) {
+    char* p = strtok(haystack, needle);
+    if(p) {
+        return strlen(p);
+    }
+    return -1;
+}
+
+char* ssubstr(char* str, int start, int len) {
+    int l = strlen(str);
+    int i, z=0;
+
+    if(start<0 || len + start > l || len<0) {
+        return str;
+    }
+
+    char* tmp = (char*)malloc(len);
+    for(i=start;i<start+len;++i){
+        tmp[z] = str[i];
+        ++z;
+    }
+    tmp[z] = '\0';
+    strcpy(str, tmp);
+    free(tmp);
+
+    return str;
+}
+
+char* suc_word(char* str) { 
     int i;
-    int x = strlen(string);
+    int x = strlen(str);
     for (i=1;i<x;i++){
          if (isalpha(str[i]) && str[i-1] == ' '){ 
              str[i]= toupper(str[i]);
@@ -110,74 +89,97 @@ char* uc_words(char* str) {
 }
 
 //TODO
-// char* md5(char* str) { return str; } //STUB
+// char* md5(char* str) { return str; } #STUB
 
-int ascii(char c) {
+int sascii(char c) {
 	return (int)(c % 128);
 }
 
-char chr(int n) { 
+char schr(int n) { 
     return (char)(n % 128); 
 }
 
-char* btrim(char* str, char* chars) { 
-    int i,z, y;
-    char* tmp = str;
+char* sbtrim(char* str, char* chars) { 
+    int i,z, y = 0;
     int l = strlen(chars);
     int l2 = strlen(str);
+    char* tmp = (char*)malloc(l2);
 
-    for(i=0; i<l;++i){
-        for(z=0;z<l2;++z){
-            if(str[z] == chars[i]){
-            }
-            else {
+    int cond = 1;
+
+    for(z=0;z<l2;++z){
+        cond = 1;
+        for(i=0; i<l && cond;++i){
+            if(str[z] != chars[i] && i + 1 == l){
                 tmp[y] = str[z];
+                ++y;
+            }
+            else if( str[z] == chars[i] ){
+                cond = 0;
+            }
+        }
+    }
+    tmp[y] = '\0';
+    strcpy(str, tmp);
+    free(tmp);
+    
+    return str;
+}
+
+char* srpad(char* str, int len, char* fill) { 
+    char* tmp = (char*)malloc(len);
+    int l = strlen(str);
+    int l2 = strlen(fill);
+    int i, z, y = 0;
+
+    if(l > len)
+        return str;
+
+    strcpy(tmp, str);
+    for(i=l;i<len;i+=l2){
+        for(z=0;z<l2;++z){
+            if(i+z < len) {
+                tmp[i+z] = fill[z];
+                ++y;
+            }
+        }
+    }
+    tmp[y+l] = '\0';
+    strcpy(str, tmp);
+    free(tmp);
+
+    return str; 
+}
+
+char* slpad(char* str, int len, char* fill) { 
+    char* tmp = (char*)malloc(len);
+    int l = strlen(str);
+    int l2 = strlen(fill);
+    int i, z, y = 0;
+
+    if(l > len)
+        return str;
+
+    for(i=0;i<len-l;i+=l2){
+        for(z=0;z<l2;++z){
+            if(i+z < len - l) {
+                tmp[i+z] = fill[z];
                 ++y;
             }
         }
     }
     tmp[y] = '\0';
-    
-    return tmp;
-}
+    strcat(tmp, str);
+    tmp[y+l] = '\0';
+    strcpy(str, tmp);
+    free(tmp);
 
-char* rpad(char* str, int len, char* fill) { 
-    char* tmp = str + len;
-    int l = strlen(str);
-    int l2 = strlen(fill);
-    int i;
-
-    if(l2+l > len)
-        return str;
-
-    strcpy(tmp, src, l);
-    for(i=l;i<len;i+=l2){
-        strcat(tmp, fill);
-    }
-
-    return tmp; 
-}
-
-char* lpad(char* str, int len, char* fill) { 
-    char* tmp = str + len;
-    int i;
-    int l = strlen(str);
-    int l2 = strlen(fill);
-
-    if(l+l2>len)
-        return str;
-    
-    for(i=l2;i<len;i+=l2){
-        strcat(tmp,fill);
-    }
-    strcat(tmp,str);
-
-    return tmp;
+    return str; 
 }
 
 // taken from 
-//http://stackoverflow.com/questions/779875/what-is-the-function-to-replace-string-in-c
-char *replace(char *orig, char *rep, char *with) {
+//http:#stackoverflow.com/questions/779875/what-is-the-function-to-replace-string-in-c
+char *sreplace(char *orig, char *rep, char *with) {
     char *result; // the return string
     char *ins;    // the next insert point
     char *tmp;    // varies
@@ -223,20 +225,24 @@ char *replace(char *orig, char *rep, char *with) {
     return result;
 }
 
-char* repeat(char* str, int n) { 
+char* srepeat(char* str, int n) { 
     int l = strlen(str);
-    char* tmp = str * n;
+    char* tmp = (char*)malloc( n * l );
     int i, z = 0;
 
     for(i=0;i<n;++i){
         for(z=0;z<l;++z) {
-            tmp[i+z] = str[z];
+            tmp[(i*l)+z] = str[z];
         }
     }
-    return tmp;
+//     printf("%s:%s\n", tmp, str);
+    strcpy(str, tmp);
+    free(tmp);
+
+    return str;
 }
 
-char* split_part(char* str, char* delim, int field) { 
+char* ssplit_part(char* str, char* delim, int field) { 
     char* p = strtok(str, delim);
     int i;
     for(i=0;p;++i){
@@ -247,7 +253,7 @@ char* split_part(char* str, char* delim, int field) {
     return str; 
 }
 
-char* to_print(char* str) { 
+char* sto_print(char* str) { 
     char* tmp = str;
     int len = strlen(str);
     int i, z = 0;
@@ -266,7 +272,7 @@ char* to_print(char* str) {
 //     return str; 
 // }
 
-char* to_ascii(char* str) { 
+char* sto_ascii(char* str) { 
     char* tmp = str;
     int len = strlen(str);
     int i, z = 0;
@@ -281,23 +287,24 @@ char* to_ascii(char* str) {
 }
 ...
 
-%AliciaCore = (
-		lower => 1,
-		upper => 1,
-        reverse => 1,
-        left => 2,
-        right => 2,
-        index => 2,
-        substr => 3,
-        ascii => 1,
-        chr => 1,
-        btrim => 2,
-        rpad => 3,
-        lpad => 3,
-        replace => 3,
-        repeat => 2,
-        split_part => 3,
-        to_print => 1,
-        to_ascii => 1
+%AliciaFuncs = (
+		slower => 1,
+		supper => 1,
+        sreverse => 1,
+        sleft => 2,
+        sright => 2,
+        sindex => 2,
+        ssubstr => 3,
+        suc_word => 1,
+        sascii => 1,
+        schr => 1,
+        sbtrim => 2,
+        srpad => 3,
+        slpad => 3,
+        sreplace => 3,
+        srepeat => 2,
+        ssplit_part => 3,
+        sto_print => 1,
+        sto_ascii => 1
 );
 
