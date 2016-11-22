@@ -66,41 +66,41 @@ sub test_file_io{
 }
 
 sub test_functions{
-    $f = 'examples/func.sql';
-    create_funfile($f);
-
-    $sql = "SELECT add_one(4)";
-    $r = $a->exec($sql);
-#     print Dumper($r);
-    assert($r->[0][0] == 5, "add_one func", __LINE__);
-
-#     $f = 'examples/fibonacci.sql';
+#     $f = 'examples/func.sql';
 #     create_funfile($f);
+# 
+#     $sql = "SELECT add_one(4)";
+#     $r = $a->exec($sql);
+# #     print Dumper($r);
+#     assert($r->[0][0] == 5, "add_one func", __LINE__);
+# 
+# #     $f = 'examples/fibonacci.sql';
+# #     create_funfile($f);
+# # 
+# #     $sql = "SELECT fibonacci(10)";
+# #     $r = $a->exec($sql);
+# #     print Dumper($r);
+# #     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
+# 
+#     $f = 'examples/funs.pl';
+#     create_funfile_pl($f);
+# 
+#     $sql = "SELECT trim(f1) from it";
+#     $r = $a->exec($sql);
+#     assert($r->[0][0] eq "0 1", "pl func 1", __LINE__);
 # 
 #     $sql = "SELECT fibonacci(10)";
 #     $r = $a->exec($sql);
-#     print Dumper($r);
+# #     print Dumper($r);
 #     assert($r->[0][0] == 55, "fibonacci func", __LINE__);
-
-    $f = 'examples/funs.pl';
-    create_funfile_pl($f);
-
-    $sql = "SELECT trim(f1) from it";
-    $r = $a->exec($sql);
-    assert($r->[0][0] eq "0 1", "pl func 1", __LINE__);
-
-    $sql = "SELECT fibonacci(10)";
-    $r = $a->exec($sql);
-#     print Dumper($r);
-    assert($r->[0][0] == 55, "fibonacci func", __LINE__);
-    
+#     
     $sql = "SELECT LOWER('AAA')";
     $r = $a->exec($sql);
     assert($r->[0][0] eq 'aaa', "C functions work", __LINE__);
 
-    $sql = "SELECT LEFTS( 'aaccc', 2 )";
+    $sql = "SELECT SLEFT( 'aaccc', 2 )";
     $r = $a->exec($sql);
-    print Dumper($r);
+#     print Dumper($r);
 
 #     $sql = "SELECT fibonacci(30)";
 #     $r = $a->exec($sql);

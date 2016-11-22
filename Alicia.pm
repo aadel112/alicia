@@ -154,15 +154,22 @@ my $parse_read_instr = sub {
         elsif( $i - $offset == 3 and uc $e ne 'INTO' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be INTO\n");
         }
-
+        elsif($i-$offset == 5 and uc $e ne 'WITH') {
+            die("Syntax Error on statement $stmt_no, token $e should be WITH\n");
+        }
     }
     my $file = $word_ref->[$offset+2];
     my $in = $word_ref->[$offset+4];
 
+    my @rest = splice @$word_ref, 6, scalar(@$word_ref) - 6;
+    my $csv_option_str = join ' ', @rest;
+    my %csv_ops = scalar @rest ? eval $csv_option_str : ();
+
     %instr = (
         INSTR=> 'READ',
         FILE => $file,
-        TABLE => $in
+        TABLE => $in,
+        WITH =>\%csv_ops
     );
 
     return \%instr;
@@ -196,15 +203,22 @@ my $parse_write_instr = sub {
         elsif( $i - $offset == 3 and uc $e ne 'FROM' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be FROM\n");
         }
-
+        elsif($i-$offset == 5 and uc $e ne 'WITH') {
+            die("Syntax Error on statement $stmt_no, token $e should be WITH\n");
+        }
     }
     my $file = $word_ref->[$offset+2];
     my $out = $word_ref->[$offset+4];
 
+    my @rest = splice @$word_ref, 6, scalar(@$word_ref) - 6;
+    my $csv_option_str = join ' ', @rest;
+    my %csv_ops = scalar @rest ? eval $csv_option_str : ();
+
     %instr = (
         INSTR => 'WRITE',
         FILE => $file,
-        TABLE => $out
+        TABLE => $out,
+        WITH =>\%csv_ops
     );
 
     return \%instr;
@@ -332,78 +346,84 @@ my $fetch = sub {
     }
     $sth->finish;
     if( defined $print_options ) {
-        open $fh, ">:encoding(utf8)", $print_options->{file};
+        if( defined $print_options->{file} ) {
+            open $fh, ">:encoding(utf8)", $print_options->{file};
+        }
         my $csv = $self->{csv};
         foreach my $k ( keys %$print_options ) {
             $csv->{$k} = $print_options->{$k};
         }
        
-        $csv->say ($fh, $_) for @arr;
+        $csv->say( defined $print_options->{file} ? $fh : \*STDOUT, 
+            $_
+        ) for @arr;
+        
         close $fh;
     }
 
-    return $print ? $self : \@arr;
+    return \@arr;
 };
 
-my $get_sql_fun_name = sub {
-    my $self = shift;
-    my $code = shift;
-
-    if( $code =~ m/create\s+function\s+([^\(\s]+)\s*/io ){
-        return $1;
-    }
-    return undef;
-};
-
-my $get_sql_fun_params = sub {
-    my $self = shift;
-    my $code = shift;
-
-    my @params = ();
-    my $fn = $self->$get_sql_fun_name($code);
-#     print "'$fn'\n";
-    my @a = $code =~ /$fn\s*\(([^\)]*)\)/id;
-#     if($code =~ m/$fn\(([^\)]*)\)/iod) {
-#     print Dumper(@a);
-    foreach $a (@a) {
-#         print "HERE";
-        my $list = $1;
-#         print $list."\n";
-        my @p = split /,/, $list;
-        foreach my $p ( @p ) {
-            $p =~ s/^\s+|\s+$//;
-            push @params, $p;
-        }
-    }
-    return @params;
-};
-
-my $get_sql_fun_body = sub {
-    my $self = shift;
-    my $code = shift;
-
-    my $ocode = $code;
-    my @params = $self->$get_sql_fun_params($code);
-
-    for(my $i = 0; $i < scalar @params; ++$i) {
-        $code =~ s/$params[$i]/\$_[$i]/ig;
-    }
-    $code =~ s/.*\s+function\s+.*\)[\r\n]*//iog;
-    $code =~ s/.*as\s+begin\s+//imo;
-    $code =~ s/(\s+)end$/$1/io;
-
-    $code =~ s/\s*SET\s+//iog;
-    $code =~ s/@/\$/gio;
-    $code =~ s/([\r\n]+)/;$1/g;
-    $code =~ s/case\s*//iog;
-    $code =~ s/when(.+)then/if\($1\) {/gio;
-    $code =~ s/end/}/gio;
-    $code =~ s/else/} else {/iog;
-    $code =~ s/({|});/$1/go;
-    $code = lc $code;
-
-    return $code;
-};
+# my $get_sql_fun_name = sub {
+#     my $self = shift;
+#     my $code = shift;
+# 
+#     if( $code =~ m/create\s+function\s+([^\(\s]+)\s*/io ){
+#         return $1;
+#     }
+#     return undef;
+# };
+# 
+# my $get_sql_fun_params = sub {
+#     my $self = shift;
+#     my $code = shift;
+# 
+#     my @params = ();
+#     my $fn = $self->$get_sql_fun_name($code);
+# #     print "'$fn'\n";
+#     my @a = $code =~ /$fn\s*\(([^\)]*)\)/id;
+# #     if($code =~ m/$fn\(([^\)]*)\)/iod) {
+# #     print Dumper(@a);
+#     foreach $a (@a) {
+# #         print "HERE";
+#         my $list = $1;
+# #         print $list."\n";
+#         my @p = split /,/, $list;
+#         foreach my $p ( @p ) {
+#             $p =~ s/^\s+|\s+$//;
+#             push @params, $p;
+#         }
+#     }
+#     return @params;
+# };
+# 
+# my $get_sql_fun_body = sub {
+#     my $self = shift;
+#     my $code = shift;
+# 
+#     my $ocode = $code;
+#     my @params = $self->$get_sql_fun_params($code);
+# 
+#     for(my $i = 0; $i < scalar @params; ++$i) {
+#         $code =~ s/$params[$i]/\$_[$i]/ig;
+#     }
+#     $code =~ s/.*\s+function\s+.*\)[\r\n]*//iog;
+#     $code =~ s/.*as\s+begin\s+//imo;
+#     $code =~ s/(\s+)end$/$1/io;
+# 
+#     $code =~ s/\s*SET\s+//iog;
+#     $code =~ s/@/\$/gio;
+#     $code =~ s/([\r\n]+)/;$1/g;
+#     $code =~ s/case\s*//iog;
+#     $code =~ s/when(.+)then/if\($1\) {/gio;
+#     $code =~ s/end/}/gio;
+#     $code =~ s/else/} else {/iog;
+#     $code =~ s/({|});/$1/go;
+#     $code = lc $code;
+# 
+#     return $code;
+# };
+# 
 
 my $register_lib = sub {
     my $self = shift;
@@ -411,20 +431,12 @@ my $register_lib = sub {
 
     require $lib if( -e $lib );
     foreach my $f ( keys %AliciaFuncs ) {
-
-#         print left('aaa', 1);
-#         print "$f\n";
-#         print Dumper(\&lower );
-#         my $s = sub { left(@_) };
-#         print Dumper( $self->{conn} );
-       
         my $s = eval '\&' . $f;
+        my ($argc, $not_deterministic) = $AliciaFuncs{$f};
         $self->{conn}->sqlite_create_function(
-            $f, -1, $s
-             #eval ('\&' . $f)
+            $f, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC)
         );
     }
-#     die();
     undef %AliciaFuncs;
 
     return $self;
@@ -482,6 +494,7 @@ sub new {
         verbose => 1,
         core_lib => $corelib,
         debug => 0,
+        test => 0,
         version_major => '0',
         version_minor => '1'
     };
@@ -495,7 +508,7 @@ sub new {
 
 sub main { #TODO - help and error checking
     my $script_name = basename( $0 );
-    my $self = Alicia->new();
+    our $self = Alicia->new();
     $self->parse_and_execute_statements( $ARGV[0] );
 } 
 
@@ -514,7 +527,7 @@ sub parse_and_execute_statements {
         $code = do { local $/; <STDIN> };
     }
 
-    $code =~ s/\-\-.*$//g;
+    $code =~ s/--.*$//g;
     
     my @cmds = split /;/, $code;
 
@@ -528,16 +541,16 @@ sub parse_and_execute_statements {
         my @words = split /\s+/, $line;
         my $fword = uc $words[0];
 
-        $print = 0;
-        if( $fword eq 'PRINT' ) {
-            $print = 1;
-            @words = reverse @words;
-            @words = pop @words;
-            next unless( scalar @words );
-
-            @words = reverse @words;
-            $fword = uc $words[0];
-        }
+#         $print = 0;
+#         if( $fword eq 'PRINT' ) {
+#             $print = 1;
+#             @words = reverse @words;
+#             @words = pop @words;
+#             next unless( scalar @words );
+# 
+#             @words = reverse @words;
+#             $fword = uc $words[0];
+#         }
 
         #simple set of instructions
         if( $fword eq 'READ' ) {
@@ -556,7 +569,6 @@ sub parse_and_execute_statements {
             );
             $instr_ref = \%h;
         }
-
         push @ins, $instr_ref;
     }
 
@@ -567,14 +579,16 @@ sub parse_and_execute_statements {
         if( $h{INSTR} eq 'READ' ) {
             my $a1 = $self->$get_set($h{FILE});
             my $a2 = $self->$get_set($h{TABLE});
+            my $a3 = $h->{WITH};
             $self->$DEBUG("Read '$a1', '$a2'", __LINE__);
-            $self->read($a1, $a2);        
+            $self->read($a1, $a2, $a3);        
         }
         elsif( $h{INSTR} eq 'WRITE' ) {
             my $a1 = $self->$get_set($h{FILE});
             my $a2 = $self->$get_set($h{TABLE});
+            my $a3 = $h->{WITH};
             $self->$DEBUG("Write '$a1', '$a2'", __LINE__);
-            $self->write($a1, $a2);
+            $self->write($a1, $a2, $a3);
         }
         elsif( $h{INSTR} eq 'LOAD' ) {
             my $a = $self->$get_set($h{FILE});
@@ -584,7 +598,7 @@ sub parse_and_execute_statements {
         else {
             my $a = $self->$get_set($h{STMT});
             $self->$DEBUG("Exec '$a'", __LINE__);
-            $self->exec($a);
+            $self->exec($a, {});
         }
     }
 
@@ -686,6 +700,12 @@ sub read {
     open my $fh, "<:encoding(utf8)", $file;
     my $i = 0;
     while (my $row = $csv->getline ($fh)) {
+        if(!$csv->{sep_char}){
+            my $rs = join '', @$row;
+            my @ra = ( $rs );
+            $row = \@ra;
+        }
+        
         if( not $i ) {
             my $os = '';
             my @params = ();
@@ -716,34 +736,34 @@ sub write {
     return $self->exec($sql, \%op);
 }
 
-sub create_function {
-    my $self = shift;
-    my $code = shift;
-    my $is_perl = shift;
-
-    if( !$is_perl ) {
-        my $fnm = $self->$get_sql_fun_name($code);
-        my $fnb = $self->$get_sql_fun_body($code);
-#         $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
-        my $body = sub { 
-            eval $fnb;
-        };
-#         print Dumper($body);
-        $self->{conn}->sqlite_create_function(
-            $fnm, -1, $body
-        );
-    }
-    else {
-        if( $code =~ m/sub\s+([^{\s]+)\s*{/o ) {
-            my $fnm = $1;
-            $code =~ s/sub\s+[^{]+{/sub {/o;
-            my $fnb = $code;
-            my $body = eval $fnb;
-#             $self->$DEBUG("PLFN: $fnm : $fnb\n", __LINE__);
-            $self->{conn}->sqlite_create_function(
-                $fnm, -1, $body
-            );
-        }
-    }
-    return $self;
-}
+# sub create_function {
+#     my $self = shift;
+#     my $code = shift;
+#     my $is_perl = shift;
+# 
+#     if( !$is_perl ) {
+#         my $fnm = $self->$get_sql_fun_name($code);
+#         my $fnb = $self->$get_sql_fun_body($code);
+# #         $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
+#         my $body = sub { 
+#             eval $fnb;
+#         };
+# #         print Dumper($body);
+#         $self->{conn}->sqlite_create_function(
+#             $fnm, -1, $body
+#         );
+#     }
+#     else {
+#         if( $code =~ m/sub\s+([^{\s]+)\s*{/o ) {
+#             my $fnm = $1;
+#             $code =~ s/sub\s+[^{]+{/sub {/o;
+#             my $fnb = $code;
+#             my $body = eval $fnb;
+# #             $self->$DEBUG("PLFN: $fnm : $fnb\n", __LINE__);
+#             $self->{conn}->sqlite_create_function(
+#                 $fnm, -1, $body
+#             );
+#         }
+#     }
+#     return $self;
+# }

@@ -1,0 +1,8 @@
+READ FILE examples/sales.linux.csv INTO itbl 
+    WITH ( sep_char => undef, quote_char => undef );
+
+SELECT SLEFT('aasdd', 3);
+
+SELECT * FROM itbl LIMIT 10;
+
+-- LOAD /tmp/test.pl;
