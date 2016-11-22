@@ -1,5 +1,28 @@
 use Inline C => << '...';
 
+//EVIL MACROS
+//===========
+
+#define swap(x,y) do \ 
+   { unsigned char swap_temp[sizeof(x) == sizeof(y) ? (signed)sizeof(x) : -1]; \
+     memcpy(swap_temp,&y,sizeof(x)); \
+     memcpy(&y,&x,       sizeof(x)); \
+     memcpy(&x,swap_temp,sizeof(x)); \
+    } while(0)
+
+#define eq(a,b) !strcmp(a,b)
+
+#define SECOND "second"
+#define MINUTE "minute"
+#define HOUR "hour"
+#define DAY "day"
+#define MONTH "month"
+#define YEAR "year"
+#define CENTURY "century"
+#define DOW "dow"
+#define DOY "doy"
+#define MILLENIUM "millenium"
+
 //STRING FUNCTIONS
 //================
 
@@ -285,6 +308,278 @@ char* sto_ascii(char* str) {
     tmp[z] = '\0';
     return tmp; 
 }
+
+//DATE FUNCTIONS - TODO improve
+//==============
+
+// base taken from 
+//http://stackoverflow.com/questions/19407944/convert-time-t-to-integer
+//I just extended it
+int strtomonth(int *mm, const char *str) {
+    static const char *sname[] = {
+        "jan", "feb", "mar", "apr", "may", "jun",
+        "jul", "aug", "sep", "oct", "nov", "dec",
+        NULL
+    };    
+    int i;
+
+    for (i = 0; sname[i]; i++) {
+        if (strcmp(sname[i], str) == 0) {
+            *mm = i + 1;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int is_all_digits(char* str) {
+    int l = strlen(str);
+    int i;
+    for(i=0;i<l;++i){
+        if(!isdigit(str[i]))
+            return 0;
+    }
+    return 1;
+}
+
+//not ultra functional, in the sense that it's really not able to get too many formats right
+int sstrtotime(char *s) {
+	time_t time;
+    struct tm tm;
+    int dd, mm, yy;
+    int hrs = 0, min = 0, sec = 0;
+    char buf[20];
+
+    if( !strlen(sbtime(s, " ")) ) 
+        return (int)time;
+
+    if( strlen(s) == 10 && is_all_digits(s) ) {
+        return atoi(s);
+    }
+
+    if (sscanf(s, "%u-%u-%u %u:%u:%u",
+        &yy, &mm, &dd, &hrs, &min, &sec) >= 3) goto okay;
+
+    if (sscanf(s, "%u-%19[a-zA-Z]-%u %u:%u:%u",
+        &yy, buf, &dd, &hrs, &min, &sec) >= 3
+        && strtomonth(&mm, buf)) goto okay;
+
+    if(sscanf(s, "%u/%u/%u %u:%u:%u",
+        &yy, &mm, &dd, &hrs, &min, &sec) >= 3) goto okay;
+
+    return 0;
+
+  okay:
+    //TODO - Do some sanity checking to rule out 2015-mar-35 and such
+
+    if( mm > 11 ) {
+        if( dd <= 11 ) {
+			swap(dd, mm);
+        }
+		else if( yy <= 11 ) {
+			swap(yy, mm);
+		}
+    }
+
+	if( dd > 31 ) {
+		if( yy <= 31 ) {
+			swap(yy, dd);
+		}
+	}
+
+    tm.tm_sec = sec;
+    tm.tm_min = min;
+    tm.tm_hour = hrs;
+    tm.tm_mday = dd;
+    tm.tm_mon = mm - 1;
+    tm.tm_year = yy - 1900;
+
+    time = mktime(&tm);
+    return (int)time;
+}
+
+char* sdate(char* str) {
+	int epoch = sstrtotime(str);
+
+	char buf[80];
+   	time_t t = (time_t)epoch;
+    struct tm ts;
+
+	time(&t);
+
+	ts = *localtime(&t);
+    strftime(buf, sizeof(buf), "%Y-%m-%d", &ts);
+
+	strcpy(str, buf);
+	return str;
+}
+
+char* stimestamp(char* str) {
+	int epoch = sstrtotime(str);
+
+	char buf[80];
+   	time_t t = (time_t)epoch;
+    struct tm ts;
+
+	time(&t);
+
+	ts = *localtime(&t);
+    strftime(buf, sizeof(buf), "%Y-%m-%d %T", &ts);
+
+	strcpy(str, buf);
+	return str;
+}
+
+//inspired by 
+//https://www.postgresql.org/docs/9.1/static/functions-datetime.html
+
+char* sage(char* timestamp1, char* timestamp2) {
+    int e1 = sstrtotime(timestamp1);
+    int e2 = sstrtotime(timedtamp2);
+    int diff = e1 - e2;
+    int negative = diff < 0 ? 1 : 0;
+    int sec = min = hour = dd =  yy;
+    char buf[80];
+    memset(buff, 0, 80);
+
+    if( negative ) {
+        diff = -1 * diff;
+    }
+
+    sec = diff % 60;
+    diff /= 60;
+    min = diff % 60;
+    diff /= 60;
+    hour = diff % 24;
+    diff /= 24;
+    dd = diff % 365;
+    diff /= 365;
+    yy = diff;
+
+    sprintf(buf, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
+
+    strcpy(timestamp1, buf);
+    return timestamp1;
+}
+
+char* scurrent_date() {
+    return sdate("");
+}
+
+char* scurrent_time() {
+    return ssplit_part(stimestamp(""), " ", 1);
+}
+
+char* scurrent_timestamp() {
+    return stimestamp("");
+}
+
+char* sdate_part(char* part, char* timestamp) {
+    char* tmp = slower(part);
+    swap(tmp. part);
+
+    int epoch = sstrtotime(timestamp);
+
+	char buf[80];
+   	time_t t = (time_t)epoch;
+    struct tm ts;
+
+	time(&t);
+
+	ts = *localtime(&t);
+
+    if( eq(part, SECOND) ) {
+        strftime(buf, sizeof(buf), "%S", &ts);
+    }
+    else if(eq(part, MINUTE)) {
+        strftime(buf, sizeof(buf), "%M", &ts);
+    }
+    else if(eq(part, HOUR)){
+        strftime(buf, sizeof(buf), "%C", &ts);    
+    }
+    else if(eq(part, DAY)) {
+        strftime(buf, sizeof(buf), "%d", &ts);
+    }
+    else if(eq(part, MONTH)) {
+        strftime(buf, sizeof(buf), "%m", &ts);
+    }
+    else if(eq(part, YEAR)) {
+        strftime(buf, sizeof(buf), "%Y", &ts);
+    }
+    else if(eq(part, CENTURY)) {
+        strftime(buf, sizeof(buf), "%C", &ts);
+    }
+    else if(eq(part, DOW)) {
+        sprintf(buf, "%d", (int)ts.tm_wday); 
+    }
+    else if(eq(part, DOY)) {
+        strftime(buf, sizeof(buf), "%j", &ts);
+    }
+    else if(eq(part, MILLENIUM)) {
+        strftime(buf, sizeof(buf), "%C", &ts);
+        int m (atoi(buf) / 1000) + 1;
+        memset(buf, 0, 80);
+        sprintf(buf, "%d", m);    
+    }
+    else {
+        return "";
+    }
+    strcpy(timestamp, buf);
+
+    return timestamp;
+}
+
+char* sdate_trunc(char* part, char* timestamp) {
+    int epoch = sstrtotime(timestamp);
+    int dayepoch = epoch /= (24*3600);
+    dayepoch *= (24*3600);
+
+	char buf[80];
+
+    if(eq(part, MINUTE)) {
+        epoch /= 60;
+        epoch *= 60;
+        sprintf(buf, "%d", epoch);
+        return stimestamp(buf);
+    }
+    else if(eq(part, HOUR)){
+        epoch /= 3600;
+        epoch *= 3600;
+        sprintf(buf, "%d", epoch);
+        return stimestamp(buf);
+    }
+    else if(eq(part, DAY)) {
+        epoch = dayepoch;
+        sprintf(buf, "%d". epoch);
+        strcpy(timestamp, buf);
+        memset(buf, 0, 80);
+        sprintf(buf, "%s-%s-%s", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)), sdate_part(DAY, sdate(buf)) );
+        strcpy(timestamp, buf);
+        return timestamp;
+    }
+    else if(eq(part, MONTH)) {
+        epoch = dayepoch;
+        sprintf(buf, "%d". epoch);
+        strcpy(timestamp, buf);
+        memset(buf, 0, 80);
+        sprintf(buf, "%s-%s-01", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)));
+        strcpy(timestamp, buf);
+        return timestamp;
+    }
+    else if(eq(part, YEAR)) {
+        epoch = dayepoch;
+        sprintf(buf, "%d". epoch);
+        strcpy(timestamp, buf);
+        memset(buf, 0, 80);
+        sprintf(buf, "%s-01-01", sdate_part(YEAR, sdate(buf)) );
+        strcpy(timestamp, buf);
+        return timestamp;
+    }
+    return timestamp;
+}
+
+
 ...
 
 %AliciaFuncs = (
@@ -305,7 +600,16 @@ char* sto_ascii(char* str) {
         srepeat => 2,
         ssplit_part => 3,
         sto_print => 1,
-        sto_ascii => 1
+        sto_ascii => 1,
+		sstrtotime => 1,
+		sdate => 1,
+		stimestamp => 1,
+        sage => 2,
+        scurrent_date => 0,
+        scurrent_time => 0,
+        scurrent_timestamp => 0,
+        sdate_part => 2,
+        sdate_trunc => 2
 );
 
-
+%AliciaAggs = ();

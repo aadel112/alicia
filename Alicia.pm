@@ -1,9 +1,8 @@
 #!/usr/bin/env perl
 
-
 =head1 NAME
 
-Alicia - SQL As a high speed, all-purpose programming language
+B<Alicia> - SQL As a high speed, all-purpose programming language
 
 =head1 SYNOPSIS
 
@@ -62,8 +61,6 @@ reads a delimited file into a table, where the fields will be all text, and will
 =item C<write>
 
 writes a table to a delimited file.
-
-=item C<create_function>
 
 =back
 
@@ -364,67 +361,6 @@ my $fetch = sub {
     return \@arr;
 };
 
-# my $get_sql_fun_name = sub {
-#     my $self = shift;
-#     my $code = shift;
-# 
-#     if( $code =~ m/create\s+function\s+([^\(\s]+)\s*/io ){
-#         return $1;
-#     }
-#     return undef;
-# };
-# 
-# my $get_sql_fun_params = sub {
-#     my $self = shift;
-#     my $code = shift;
-# 
-#     my @params = ();
-#     my $fn = $self->$get_sql_fun_name($code);
-# #     print "'$fn'\n";
-#     my @a = $code =~ /$fn\s*\(([^\)]*)\)/id;
-# #     if($code =~ m/$fn\(([^\)]*)\)/iod) {
-# #     print Dumper(@a);
-#     foreach $a (@a) {
-# #         print "HERE";
-#         my $list = $1;
-# #         print $list."\n";
-#         my @p = split /,/, $list;
-#         foreach my $p ( @p ) {
-#             $p =~ s/^\s+|\s+$//;
-#             push @params, $p;
-#         }
-#     }
-#     return @params;
-# };
-# 
-# my $get_sql_fun_body = sub {
-#     my $self = shift;
-#     my $code = shift;
-# 
-#     my $ocode = $code;
-#     my @params = $self->$get_sql_fun_params($code);
-# 
-#     for(my $i = 0; $i < scalar @params; ++$i) {
-#         $code =~ s/$params[$i]/\$_[$i]/ig;
-#     }
-#     $code =~ s/.*\s+function\s+.*\)[\r\n]*//iog;
-#     $code =~ s/.*as\s+begin\s+//imo;
-#     $code =~ s/(\s+)end$/$1/io;
-# 
-#     $code =~ s/\s*SET\s+//iog;
-#     $code =~ s/@/\$/gio;
-#     $code =~ s/([\r\n]+)/;$1/g;
-#     $code =~ s/case\s*//iog;
-#     $code =~ s/when(.+)then/if\($1\) {/gio;
-#     $code =~ s/end/}/gio;
-#     $code =~ s/else/} else {/iog;
-#     $code =~ s/({|});/$1/go;
-#     $code = lc $code;
-# 
-#     return $code;
-# };
-# 
-
 my $register_lib = sub {
     my $self = shift;
     my $lib = shift;
@@ -432,7 +368,7 @@ my $register_lib = sub {
     require $lib if( -e $lib );
     foreach my $f ( keys %AliciaFuncs ) {
         my $s = eval '\&' . $f;
-        my ($argc, $not_deterministic) = $AliciaFuncs{$f};
+        my ($argc, $not_deterministic) =  split /\|/, $AliciaFuncs{$f};
         $self->{conn}->sqlite_create_function(
             $f, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC)
         );
@@ -540,17 +476,6 @@ sub parse_and_execute_statements {
 
         my @words = split /\s+/, $line;
         my $fword = uc $words[0];
-
-#         $print = 0;
-#         if( $fword eq 'PRINT' ) {
-#             $print = 1;
-#             @words = reverse @words;
-#             @words = pop @words;
-#             next unless( scalar @words );
-# 
-#             @words = reverse @words;
-#             $fword = uc $words[0];
-#         }
 
         #simple set of instructions
         if( $fword eq 'READ' ) {
@@ -736,34 +661,3 @@ sub write {
     return $self->exec($sql, \%op);
 }
 
-# sub create_function {
-#     my $self = shift;
-#     my $code = shift;
-#     my $is_perl = shift;
-# 
-#     if( !$is_perl ) {
-#         my $fnm = $self->$get_sql_fun_name($code);
-#         my $fnb = $self->$get_sql_fun_body($code);
-# #         $self->$DEBUG("FN: $fnm : $fnb\n", __LINE__);
-#         my $body = sub { 
-#             eval $fnb;
-#         };
-# #         print Dumper($body);
-#         $self->{conn}->sqlite_create_function(
-#             $fnm, -1, $body
-#         );
-#     }
-#     else {
-#         if( $code =~ m/sub\s+([^{\s]+)\s*{/o ) {
-#             my $fnm = $1;
-#             $code =~ s/sub\s+[^{]+{/sub {/o;
-#             my $fnb = $code;
-#             my $body = eval $fnb;
-# #             $self->$DEBUG("PLFN: $fnm : $fnb\n", __LINE__);
-#             $self->{conn}->sqlite_create_function(
-#                 $fnm, -1, $body
-#             );
-#         }
-#     }
-#     return $self;
-# }
