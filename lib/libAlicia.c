@@ -77,11 +77,11 @@ char* ssubstr(char* str, int start, int len) {
     return str;
 }
 
-char* suc_word(char* str) { 
+char* suc_words(char* str) { 
     int i;
     int x = strlen(str);
-    for (i=1;i<x;i++){
-         if (isalpha(str[i]) && str[i-1] == ' '){ 
+    for (i=0;i<x;++i){
+         if (isalpha(str[i]) && (!i || str[i-1] == ' ')){ 
              str[i]= toupper(str[i]);
          }
     } 
@@ -295,7 +295,7 @@ char* sto_ascii(char* str) {
         sright => 2,
         sindex => 2,
         ssubstr => 3,
-        suc_word => 1,
+        suc_words => 1,
         sascii => 1,
         schr => 1,
         sbtrim => 2,

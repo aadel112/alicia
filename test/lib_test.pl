@@ -31,6 +31,7 @@ a(srepeat('ac', 3) eq 'acacac', 'repeat');
 a(ssplit_part('hello world', ' ', 0) eq 'hello', 'split_part');
 a(sto_print("a\nba") eq 'aba', 'to_print');
 a(sto_ascii('a') eq 'a', 'to_ascii');
+a(suc_words('a bc') eq 'A Bc', 'uc_words');
 
 # 
 # 		lower => 1,
