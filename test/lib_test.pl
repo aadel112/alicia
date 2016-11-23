@@ -1,6 +1,6 @@
 use Data::Dumper;
 do 'lib/libAlicia.c';
-die();
+# die();
 
 sub a {
     my ($cond, $msg ) = @_;
@@ -37,14 +37,14 @@ a(suc_words('a bc') eq 'A Bc', 'uc_words');
 #DATE FUNCTIONS
 #==============
 $ep = `date +%s`;
-$dt = `date -d@'$ep' +%Y-%m-%s`;
-$ts = `date -d@'$ep' +%Y-%m-%d %H:%M:%S`;
-$fmt2 = `date -d@'$ep' +%m/%d/%Y %H:%M:%S`;
-$yy = `date -d@'$ep' +%Y`;
-$mm = `date -d@'$ep' +%m`;
-$dd = `date -d@'$ep' +%d`;
-$hh = `date -d@'$ep' +%H`;
-$mm = `date -d@'$ep' +%M`;
+$dt = `date -d\@'$ep' +%Y-%m-%d`;
+$ts = `date -d\@'$ep' '+%Y-%m-%d %H:%M:%S'`;
+$fmt2 = `date -d\@'$ep' '+%m/%d/%Y %H:%M:%S'`;
+$yy = `date -d\@'$ep' +%Y`;
+$mm = `date -d\@'$ep' +%m`;
+$dd = `date -d\@'$ep' +%d`;
+$hh = `date -d\@'$ep' +%H`;
+$mm = `date -d\@'$ep' +%M`;
 
 chomp $ep;
 chomp $dt;
@@ -56,12 +56,17 @@ chomp $dd;
 chomp $hh;
 chomp $mm;
 
-a(sstrtotime('') == $ep, 'empty strtotime');
+a(sstrtotime('') >= $ep, 'empty strtotime');
+# print sstrtotime('');
 a(sstrtotime($ep) == $ep, 'time strtotime');
+# print sstrtotime($ts);
 a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
+# 
+# print $fmt2 ."\n"; die();
 a(sstrtotime($ts) == $ep, 'ts strtotime');
 a(sdate('') eq $dt, 'date');
 a(stimestamp('') eq $ts, 'timestamp');
+die();
 a(sage($dt, $ts) =~ m/^-/, 'negative age');
 a(scurrent_date() ge $dt, 'current_date');
 a(length(scurrent_time()) == 8, 'current_time' );
