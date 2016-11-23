@@ -12,6 +12,18 @@ sub a {
         return 1;
     }
 }
+
+sub setup_date_vars {
+    my @arr = ( 'ep','dt','ts','fmt2','yy','mm','dd','hh','min' );
+    foreach my $v ( @arr) {
+        eval "\$o$v = \$$v if( !\$o$v );";
+    }
+    
+    foreach my $v ( @arr) {
+        eval "\$$v = \$o$v;";
+    }
+}
+
 #STRING FUNCTIONS
 #====================
 a(slower('AAA') eq 'aaa', 'lower');
@@ -44,7 +56,7 @@ $yy = `date -d\@'$ep' +%Y`;
 $mm = `date -d\@'$ep' +%m`;
 $dd = `date -d\@'$ep' +%d`;
 $hh = `date -d\@'$ep' +%H`;
-$mm = `date -d\@'$ep' +%M`;
+$min = `date -d\@'$ep' +%M`;
 
 chomp $ep;
 chomp $dt;
@@ -54,27 +66,53 @@ chomp $yy;
 chomp $mm;
 chomp $dd;
 chomp $hh;
-chomp $mm;
+chomp $min;
+setup_date_vars();
 
+# die();
 a(sstrtotime('') >= $ep, 'empty strtotime');
+setup_date_vars();
+# die();
 a(sstrtotime($ep) == $ep, 'time strtotime');
+setup_date_vars();
+# die();
 a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
+setup_date_vars();
+# die();
 a(sstrtotime($ts) == $ep, 'ts strtotime');
+setup_date_vars();
+# die();
+# print sdate('');
 a(sdate('') eq $dt, 'date');
+setup_date_vars();
+# die();
+# print stimestamp('');
 a(stimestamp('') eq $ts, 'timestamp');
+setup_date_vars();
+# die();
 a(sage($dt, $ts) =~ m/^-/, 'negative age');
+setup_date_vars();
+# die();
 a(scurrent_date() ge $dt, 'current_date');
-
+setup_date_vars();
 # die();
 a(length(scurrent_time()) == 8, 'current_time' );
+setup_date_vars();
 # die();
 a(sstrtotime(scurrent_timestamp()) >= $ep, 'current_timestamp' );
+setup_date_vars();
 # die();
 a(sdate_part('day', $ep) eq $dd, 'date_part');
-a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$mm:00", 'date_trunc min');
-print sdate_trunc('minute', $ep); die();
-a(sdate_trunc('month', $ep) eq "$yy-$mm-01 00:00:00", 'date_trunc min');
-
+setup_date_vars();
+# die();
+a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$min:00", 'date_trunc min');
+setup_date_vars();
+# print sdate_trunc('minute', $ep) . "\n";
+# print "$yy-$mm-$dd $hh:$min:00\n";
+# print sdate_trunc('month', $ep) ."\n";
+# die();
+a(sdate_trunc('month', $ep) eq "$yy-$mm-01", 'date_trunc mon');
+setup_date_vars();
 
 # 		sstrtotime => 1,
 # 		sdate => 1,

@@ -13,6 +13,7 @@ use Inline C => << '...';
 // #define SWAP_PRIMITIVE(a,b,t) do { t c = a; a = b; b = c;}while(0)
 
 #define eq(a,b) !strcmp(a,b)
+#define die exit(1)
 
 #define SECOND "second"
 #define MINUTE "minute"
@@ -26,6 +27,7 @@ use Inline C => << '...';
 #define MILLENIUM "millenium"
 
 #define BUFSIZE 80
+#define MEDBUF 1024
 
 //STRING FUNCTIONS
 //================
@@ -371,6 +373,16 @@ char *trim(char *str) {
   return str;
 }
 
+struct tm epoch_to_tm(int epoch) {
+    time_t t = (time_t)epoch;
+    struct tm ts;
+
+    time(&t);
+
+    ts = *localtime(&t);
+    return ts;
+}
+
 //not ultra functional, in the sense that it's really not able to get too many formats right
 int sstrtotime(char *s) {
     time_t t;
@@ -433,38 +445,39 @@ okay:
 char* sdate(char* str) {
     int epoch = sstrtotime(str);
 
-    char buf[BUFSIZE];
-    memset(buf, 0, BUFSIZE);
+//     char* buf = str + BUFSIZE * sizeof(char*);
+    str = (char*)malloc(BUFSIZE);
+    memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
 
     time(&t);
 
     ts = *localtime(&t);
-    strftime(buf, sizeof(buf), "%Y-%m-%d", &ts);
+    strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d", &ts);
 
-    str = (char*)malloc(BUFSIZE * sizeof(char*));
-    strcpy(str, buf);
+//     str = (char*)malloc(BUFSIZE * sizeof(char*));
+//     strcpy(str, buf);
     return str;
 }
 
 char* stimestamp(char* str) {
     int epoch = sstrtotime(str);
-
-    char buf[BUFSIZE];
-    memset(buf, 0, BUFSIZE);
+//     char* buf = str;
+    str = (char*)malloc(BUFSIZE);
+    memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
 
     time(&t);
 
     ts = *localtime(&t);
-    strftime(buf, sizeof(buf), "%Y-%m-%d %T", &ts);
+    strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d %T", &ts);
 
     //BAD
 
-    str = (char*)malloc(BUFSIZE * sizeof(char*));
-    strcpy(str, buf);
+//     str = (char*)malloc(BUFSIZE * sizeof(char*));
+//     strcpy(str, buf);
     return str;
 }
 
@@ -474,11 +487,15 @@ char* stimestamp(char* str) {
 char* sage(char* timestamp1, char* timestamp2) {
     int e1 = sstrtotime(timestamp1);
     int e2 = sstrtotime(timestamp2);
+
+    timestamp1 = (char*)malloc(MEDBUF);
+    memset(timestamp1, 0, MEDBUF);
+
     int diff = e1 - e2;
     int negative = diff < 0 ? 1 : 0;
     int sec = 0, min = 0, hour = 0, dd = 0, yy = 0;
-    char* buf = (char*)malloc(5*BUFSIZE);
-    memset(buf, 0, BUFSIZE);
+//     char* buf = timestamp1 + BUFSIZE;
+//     memset(buf, 0, BUFSIZE);
 
     if( negative ) {
         diff = -1 * diff;
@@ -494,10 +511,10 @@ char* sage(char* timestamp1, char* timestamp2) {
     diff /= 365;
     yy = diff;
 
-    sprintf(buf, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
+    sprintf(timestamp1, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
 
-    strcpy(timestamp1, buf);
-    free( buf );
+//     strcpy(timestamp1, buf);
+//     free( buf );
 
     return timestamp1;
 }
@@ -520,8 +537,9 @@ char* sdate_part(char* part, char* timestamp) {
 
     int epoch = sstrtotime(timestamp);
 
-    char* buf = (char*)malloc(BUFSIZE);
-    memset(buf, 0, BUFSIZE);
+    char* buf = timestamp;
+//     char* buf = (char*)malloc(BUFSIZE);
+//     memset(buf, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
 
@@ -565,62 +583,83 @@ char* sdate_part(char* part, char* timestamp) {
     else {
         return "";
     }
-//     strcpy(timestamp, buf);
+    strcpy(timestamp, buf);
 
-    return buf;
+    return timestamp;
 }
 
 char* sdate_trunc(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
-    int dayepoch = epoch / (24*3600);
-    dayepoch *= (24*3600);
+    struct tm ts = epoch_to_tm(epoch);
+//     char* buf[BUFSIZE];
+    char* buf = timestamp;
+//     memset(buf, 0, BUF);
 
-    char* buf = (char*)malloc(BUFSIZE);
-    memset(buf, 0, BUFSIZE);
+//     int dayepoch = epoch / (24*3600);
+//     dayepoch *= (24*3600);
+// 
+//     char* buf = (char*)malloc(BUFSIZE);
+//     memset(buf, 0, BUFSIZE);
 
     if(eq(part, MINUTE)) {
-        epoch /= 60;
-        epoch *= 60;
-        sprintf(buf, "%d", epoch);
-        return stimestamp(buf);
+        ts.tm_sec = 0;
+        strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
+//         epoch /= 60;
+//         epoch *= 60;
+//         sprintf(part, "%d", epoch);
+//         return stimestamp(part);
     }
     else if(eq(part, HOUR)){
-        epoch /= 3600;
-        epoch *= 3600;
-        sprintf(buf, "%d", epoch);
-        return stimestamp(buf);
+        ts.tm_sec = 0;
+        ts.tm_min = 0;
+        strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
+//         epoch /= 3600;
+//         epoch *= 3600;
+//         sprintf(part, "%d", epoch);
+//         return stimestamp(part);
     }
     else if(eq(part, DAY)) {
-        epoch = dayepoch;
-        sprintf(buf, "%d", epoch);
-        strcpy(timestamp, buf);
-        memset(buf, 0, BUFSIZE);
-        sprintf(buf, "%s-%s-%s", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)), sdate_part(DAY, sdate(buf)) );
-//         strcpy(timestamp, buf);
-//         return timestamp;
-        return buf;
+        ts.tm_sec = 0;
+        ts.tm_min = 0;
+        ts.tm_hour = 0;
+        strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
+//         epoch = dayepoch;
+//         sprintf(part, "%d", epoch);
+//         strcpy(timestamp, part);
+//         memset(part, 0, partSIZE);
+//         sprintf(part, "%s-%s-%s", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)), sdate_buf(DAY, sdate(part)) );
+//         return part;
     }
     else if(eq(part, MONTH)) {
-        epoch = dayepoch;
-        sprintf(buf, "%d", epoch);
-        strcpy(timestamp, buf);
-        memset(buf, 0, BUFSIZE);
-        sprintf(buf, "%s-%s-01", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)));
-//         strcpy(timestamp, buf);
-//         return timestamp;
-        return buf;
+        ts.tm_sec = 0;
+        ts.tm_min = 0;
+        ts.tm_hour = 0;
+        ts.tm_mday = 1;
+        strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d", &ts); 
+//         epoch = dayepoch;
+//         sprintf(part, "%d", epoch);
+//         strcpy(timestamp, part);
+//         memset(part, 0, partSIZE);
+//         sprintf(part, "%s-%s-01", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)));
+//         return part;
     }
     else if(eq(part, YEAR)) {
-        epoch = dayepoch;
-        sprintf(buf, "%d", epoch);
-        strcpy(timestamp, buf);
-        memset(buf, 0, BUFSIZE);
-        sprintf(buf, "%s-01-01", sdate_part(YEAR, sdate(buf)) );
-//         strcpy(timestamp, buf);
-//         return timestamp;
-        return buf;
+        ts.tm_sec = 0;
+        ts.tm_min = 0;
+        ts.tm_hour = 0;
+        ts.tm_mday = 1;
+        ts.tm_mon = 0;
+        strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d", &ts);
+        
+//         epoch = dayepoch;
+//         sprintf(part, "%d", epoch);
+//         strcpy(timestamp, part);
+//         memset(part, 0, partSIZE);
+//         sprintf(part, "%s-01-01", sdate_buf(YEAR, sdate(part)) );
+//         return part;
     }
-    return "";
+    strcpy(timestamp, buf);
+    return timestamp;
 }
 
 
