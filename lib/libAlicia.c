@@ -271,7 +271,7 @@ char* srepeat(char* str, int n) {
     return str;
 }
 
-char* ssplit_part(const char* str, char* delim, int field) { 
+char* ssplit_part(char* str, char* delim, int field) { 
     char* p = strtok(str, delim);
     int i = 0;
     while(p){
@@ -352,15 +352,36 @@ int is_all_digits(char* str) {
     return 1;
 }
 
+char *trim(char *str) {
+  char *end;
+
+  // Trim leading space
+  while(isspace((unsigned char)*str)) str++;
+
+  if(*str == 0)  // All spaces?
+    return str;
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace((unsigned char)*end)) end--;
+
+  // Write new null terminator
+  *(end+1) = 0;
+
+  return str;
+}
+
 //not ultra functional, in the sense that it's really not able to get too many formats right
 int sstrtotime(char *s) {
-    int len = strlen(s);
     time_t t;
     struct tm tm;
     int dd, mm, yy;
     int hrs = 0, min = 0, sec = 0;
 
 //     printf("GOT %s\n", s);
+
+	s = trim(s);
+    int len = strlen(s);
 
     if( !len ) {
         return (int)time(NULL);
@@ -377,6 +398,14 @@ int sstrtotime(char *s) {
     else if(sscanf(s, "%2d/%2d/%4d %2d:%2d:%2d", &mm, &dd, &yy, &hrs, &min, &sec) == 6)
         goto okay;
     else if(sscanf(s, "%2d-%2d-%4d %2d:%2d:%2d", &mm, &dd, &yy, &hrs, &min, &sec) == 6)
+        goto okay;
+    else if(sscanf(s, "%4d-%2d-%2d", &yy, &mm, &dd) == 3)
+        goto okay;
+    else if(sscanf(s, "%4d/%2d/%2d", &yy, &mm, &dd) == 3)
+        goto okay;
+    else if(sscanf(s, "%2d/%2d/%4d", &mm, &dd, &yy) == 3)
+        goto okay;
+    else if(sscanf(s, "%2d-%2d-%4d", &mm, &dd, &yy) == 3)
         goto okay;
  
     return 0;
@@ -414,6 +443,7 @@ char* sdate(char* str) {
     ts = *localtime(&t);
     strftime(buf, sizeof(buf), "%Y-%m-%d", &ts);
 
+    str = (char*)malloc(BUFSIZE * sizeof(char*));
     strcpy(str, buf);
     return str;
 }
@@ -431,6 +461,9 @@ char* stimestamp(char* str) {
     ts = *localtime(&t);
     strftime(buf, sizeof(buf), "%Y-%m-%d %T", &ts);
 
+    //BAD
+
+    str = (char*)malloc(BUFSIZE * sizeof(char*));
     strcpy(str, buf);
     return str;
 }
@@ -444,7 +477,7 @@ char* sage(char* timestamp1, char* timestamp2) {
     int diff = e1 - e2;
     int negative = diff < 0 ? 1 : 0;
     int sec = 0, min = 0, hour = 0, dd = 0, yy = 0;
-    char buf[BUFSIZE];
+    char* buf = (char*)malloc(5*BUFSIZE);
     memset(buf, 0, BUFSIZE);
 
     if( negative ) {
@@ -464,6 +497,8 @@ char* sage(char* timestamp1, char* timestamp2) {
     sprintf(buf, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
 
     strcpy(timestamp1, buf);
+    free( buf );
+
     return timestamp1;
 }
 
@@ -485,7 +520,7 @@ char* sdate_part(char* part, char* timestamp) {
 
     int epoch = sstrtotime(timestamp);
 
-    char buf[BUFSIZE];
+    char* buf = (char*)malloc(BUFSIZE);
     memset(buf, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
@@ -530,17 +565,17 @@ char* sdate_part(char* part, char* timestamp) {
     else {
         return "";
     }
-    strcpy(timestamp, buf);
+//     strcpy(timestamp, buf);
 
-    return timestamp;
+    return buf;
 }
 
 char* sdate_trunc(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
-    int dayepoch = epoch /= (24*3600);
+    int dayepoch = epoch / (24*3600);
     dayepoch *= (24*3600);
 
-    char buf[BUFSIZE];
+    char* buf = (char*)malloc(BUFSIZE);
     memset(buf, 0, BUFSIZE);
 
     if(eq(part, MINUTE)) {
@@ -561,8 +596,9 @@ char* sdate_trunc(char* part, char* timestamp) {
         strcpy(timestamp, buf);
         memset(buf, 0, BUFSIZE);
         sprintf(buf, "%s-%s-%s", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)), sdate_part(DAY, sdate(buf)) );
-        strcpy(timestamp, buf);
-        return timestamp;
+//         strcpy(timestamp, buf);
+//         return timestamp;
+        return buf;
     }
     else if(eq(part, MONTH)) {
         epoch = dayepoch;
@@ -570,8 +606,9 @@ char* sdate_trunc(char* part, char* timestamp) {
         strcpy(timestamp, buf);
         memset(buf, 0, BUFSIZE);
         sprintf(buf, "%s-%s-01", sdate_part(YEAR, sdate(buf)), sdate_part(MONTH, sdate(buf)));
-        strcpy(timestamp, buf);
-        return timestamp;
+//         strcpy(timestamp, buf);
+//         return timestamp;
+        return buf;
     }
     else if(eq(part, YEAR)) {
         epoch = dayepoch;
@@ -579,10 +616,11 @@ char* sdate_trunc(char* part, char* timestamp) {
         strcpy(timestamp, buf);
         memset(buf, 0, BUFSIZE);
         sprintf(buf, "%s-01-01", sdate_part(YEAR, sdate(buf)) );
-        strcpy(timestamp, buf);
-        return timestamp;
+//         strcpy(timestamp, buf);
+//         return timestamp;
+        return buf;
     }
-    return timestamp;
+    return "";
 }
 
 

@@ -57,22 +57,22 @@ chomp $hh;
 chomp $mm;
 
 a(sstrtotime('') >= $ep, 'empty strtotime');
-# print sstrtotime('');
 a(sstrtotime($ep) == $ep, 'time strtotime');
-# print sstrtotime($ts);
 a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
-# 
-# print $fmt2 ."\n"; die();
 a(sstrtotime($ts) == $ep, 'ts strtotime');
 a(sdate('') eq $dt, 'date');
 a(stimestamp('') eq $ts, 'timestamp');
-die();
 a(sage($dt, $ts) =~ m/^-/, 'negative age');
 a(scurrent_date() ge $dt, 'current_date');
+
+# die();
 a(length(scurrent_time()) == 8, 'current_time' );
+# die();
 a(sstrtotime(scurrent_timestamp()) >= $ep, 'current_timestamp' );
+# die();
 a(sdate_part('day', $ep) eq $dd, 'date_part');
 a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$mm:00", 'date_trunc min');
+print sdate_trunc('minute', $ep); die();
 a(sdate_trunc('month', $ep) eq "$yy-$mm-01 00:00:00", 'date_trunc min');
 
 
