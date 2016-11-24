@@ -1,5 +1,6 @@
 use Data::Dumper;
 do 'lib/libAlicia.c';
+# do 'lib/Variance.c';
 # die();
 
 sub a {
@@ -69,77 +70,57 @@ chomp $hh;
 chomp $min;
 setup_date_vars();
 
-# die();
 a(sstrtotime('') >= $ep, 'empty strtotime');
 setup_date_vars();
-# die();
 a(sstrtotime($ep) == $ep, 'time strtotime');
 setup_date_vars();
-# die();
 a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
 setup_date_vars();
-# die();
 a(sstrtotime($ts) == $ep, 'ts strtotime');
 setup_date_vars();
-# die();
-# print sdate('');
 a(sdate('') eq $dt, 'date');
 setup_date_vars();
-# die();
-# print stimestamp('');
 a(stimestamp('') eq $ts, 'timestamp');
 setup_date_vars();
-# die();
 a(sage($dt, $ts) =~ m/^-/, 'negative age');
 setup_date_vars();
-# die();
 a(scurrent_date() ge $dt, 'current_date');
 setup_date_vars();
-# die();
 a(length(scurrent_time()) == 8, 'current_time' );
 setup_date_vars();
-# die();
 a(sstrtotime(scurrent_timestamp()) >= $ep, 'current_timestamp' );
 setup_date_vars();
-# die();
 a(sdate_part('day', $ep) eq $dd, 'date_part');
 setup_date_vars();
-# die();
 a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$min:00", 'date_trunc min');
 setup_date_vars();
-# print sdate_trunc('minute', $ep) . "\n";
-# print "$yy-$mm-$dd $hh:$min:00\n";
-# print sdate_trunc('month', $ep) ."\n";
-# die();
 a(sdate_trunc('month', $ep) eq "$yy-$mm-01", 'date_trunc mon');
 setup_date_vars();
 
-# 		sstrtotime => 1,
-# 		sdate => 1,
-# 		stimestamp => 1,
-#         sage => 2,
-#         scurrent_date => 0,
-#         scurrent_time => 0,
-#         scurrent_timestamp => 0,
-#         sdate_part => 2,
-#         sdate_trunc => 2
 
+#AGGREGATES
+#==========
+# print Dumper(%Variance::);
+$v = Variance->new();
+# print Dumper($v); die();
+my @values = (10, 9, 2, 3, 5, 7);
+foreach my $val ( @values ) {
+    $v->step($val);
+}
+# die();
+$variance = $v->finalize();
+
+print $variance . "\n";
+
+
+
+# variance_new();
+# my @values = (10, 9, 2, 3, 5, 7);
+# foreach my $val ( @values ) {
+#     variance_step($val);
+# }
+# $variance = variance_finalize();
 # 
-# 		lower => 1,
-# 		upper => 1,
-#         reverse => 1,
-#         left => 2,
-#         right => 2,
-#         index => 2,
-#         substr => 3,
-#         ascii => 1,
-#         chr => 1,
-#         btrim => 2,
-#         rpad => 3,
-#         lpad => 3,
-#         replace => 3,
-#         repeat => 2,
-#         split_part => 3,
-#         to_print => 1,
-#         to_ascii => 1
-# 
+# print $variance . "\n";
+
+ 

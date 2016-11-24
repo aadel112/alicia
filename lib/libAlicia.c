@@ -1,3 +1,39 @@
+
+%AliciaFuncs = (
+    slower => 1,
+    supper => 1,
+    sreverse => 1,
+    sleft => 2,
+    sright => 2,
+    sindex => 2,
+    ssubstr => 3,
+    suc_words => 1,
+    sascii => 1,
+    schr => 1,
+    sbtrim => 2,
+    srpad => 3,
+    slpad => 3,
+    sreplace => 3,
+    srepeat => 2,
+    ssplit_part => 3,
+    sto_print => 1,
+    sto_ascii => 1,
+    sstrtotime => 1,
+    sdate => 1,
+    stimestamp => 1,
+    sage => 2,
+    scurrent_date => 0,
+    scurrent_time => 0,
+    scurrent_timestamp => 0,
+    sdate_part => 2,
+    sdate_trunc => 2
+);
+
+%AliciaAggs = (
+    variance => 1
+);
+
+
 use Inline C => << '...';
 
 //EVIL MACROS
@@ -6,8 +42,8 @@ use Inline C => << '...';
 #define swap(x,y) do \
 { unsigned char swap_temp[sizeof(x) == sizeof(y) ? (signed)sizeof(x) : -1]; \
     memcpy(swap_temp,&y,sizeof(x)); \
-        memcpy(&y,&x,       sizeof(x)); \
-        memcpy(&x,swap_temp,sizeof(x)); \
+    memcpy(&y,&x,       sizeof(x)); \
+    memcpy(&x,swap_temp,sizeof(x)); \
 } while(0)
 
 // #define SWAP_PRIMITIVE(a,b,t) do { t c = a; a = b; b = c;}while(0)
@@ -28,6 +64,8 @@ use Inline C => << '...';
 
 #define BUFSIZE 80
 #define MEDBUF 1024
+
+#define QLNV(l,i) (SvNOK(*av_fetch(l, i, 0)) ? ((double)SvNV(*av_fetch(l, i, 0))) : 0)
 
 //STRING FUNCTIONS
 //================
@@ -355,22 +393,22 @@ int is_all_digits(char* str) {
 }
 
 char *trim(char *str) {
-  char *end;
+    char *end;
 
-  // Trim leading space
-  while(isspace((unsigned char)*str)) str++;
+    // Trim leading space
+    while(isspace((unsigned char)*str)) str++;
 
-  if(*str == 0)  // All spaces?
+    if(*str == 0)  // All spaces?
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator
+    *(end+1) = 0;
+
     return str;
-
-  // Trim trailing space
-  end = str + strlen(str) - 1;
-  while(end > str && isspace((unsigned char)*end)) end--;
-
-  // Write new null terminator
-  *(end+1) = 0;
-
-  return str;
 }
 
 struct tm epoch_to_tm(int epoch) {
@@ -390,9 +428,9 @@ int sstrtotime(char *s) {
     int dd, mm, yy;
     int hrs = 0, min = 0, sec = 0;
 
-//     printf("GOT %s\n", s);
+    //     printf("GOT %s\n", s);
 
-	s = trim(s);
+    s = trim(s);
     int len = strlen(s);
 
     if( !len ) {
@@ -402,7 +440,7 @@ int sstrtotime(char *s) {
     if( len == 10 && is_all_digits(s) ) {
         return atoi(s);
     }
-    
+
     if(sscanf(s, "%4d-%2d-%2d %2d:%2d:%2d", &yy, &mm, &dd, &hrs, &min, &sec) == 6)
         goto okay;
     else if(sscanf(s, "%4d/%2d/%2d %2d:%2d:%2d", &yy, &mm, &dd, &hrs, &min, &sec) == 6)
@@ -419,14 +457,14 @@ int sstrtotime(char *s) {
         goto okay;
     else if(sscanf(s, "%2d-%2d-%4d", &mm, &dd, &yy) == 3)
         goto okay;
- 
+
     return 0;
 
 okay:
     //TODO - Do some sanity checking to rule out 2015-mar-35 and such
 
-//     printf("PARSED %d, %d, %d\n", yy, mm, dd);
-   
+    //     printf("PARSED %d, %d, %d\n", yy, mm, dd);
+
     if( mm > 12 || dd > 31 ) {
         swap(dd, mm);
     }
@@ -445,7 +483,7 @@ okay:
 char* sdate(char* str) {
     int epoch = sstrtotime(str);
 
-//     char* buf = str + BUFSIZE * sizeof(char*);
+    //     char* buf = str + BUFSIZE * sizeof(char*);
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
@@ -456,14 +494,14 @@ char* sdate(char* str) {
     ts = *localtime(&t);
     strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d", &ts);
 
-//     str = (char*)malloc(BUFSIZE * sizeof(char*));
-//     strcpy(str, buf);
+    //     str = (char*)malloc(BUFSIZE * sizeof(char*));
+    //     strcpy(str, buf);
     return str;
 }
 
 char* stimestamp(char* str) {
     int epoch = sstrtotime(str);
-//     char* buf = str;
+    //     char* buf = str;
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
@@ -476,8 +514,8 @@ char* stimestamp(char* str) {
 
     //BAD
 
-//     str = (char*)malloc(BUFSIZE * sizeof(char*));
-//     strcpy(str, buf);
+    //     str = (char*)malloc(BUFSIZE * sizeof(char*));
+    //     strcpy(str, buf);
     return str;
 }
 
@@ -494,8 +532,8 @@ char* sage(char* timestamp1, char* timestamp2) {
     int diff = e1 - e2;
     int negative = diff < 0 ? 1 : 0;
     int sec = 0, min = 0, hour = 0, dd = 0, yy = 0;
-//     char* buf = timestamp1 + BUFSIZE;
-//     memset(buf, 0, BUFSIZE);
+    //     char* buf = timestamp1 + BUFSIZE;
+    //     memset(buf, 0, BUFSIZE);
 
     if( negative ) {
         diff = -1 * diff;
@@ -513,8 +551,8 @@ char* sage(char* timestamp1, char* timestamp2) {
 
     sprintf(timestamp1, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
 
-//     strcpy(timestamp1, buf);
-//     free( buf );
+    //     strcpy(timestamp1, buf);
+    //     free( buf );
 
     return timestamp1;
 }
@@ -538,8 +576,8 @@ char* sdate_part(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
 
     char* buf = timestamp;
-//     char* buf = (char*)malloc(BUFSIZE);
-//     memset(buf, 0, BUFSIZE);
+    //     char* buf = (char*)malloc(BUFSIZE);
+    //     memset(buf, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
 
@@ -591,44 +629,44 @@ char* sdate_part(char* part, char* timestamp) {
 char* sdate_trunc(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
     struct tm ts = epoch_to_tm(epoch);
-//     char* buf[BUFSIZE];
+    //     char* buf[BUFSIZE];
     char* buf = timestamp;
-//     memset(buf, 0, BUF);
+    //     memset(buf, 0, BUF);
 
-//     int dayepoch = epoch / (24*3600);
-//     dayepoch *= (24*3600);
-// 
-//     char* buf = (char*)malloc(BUFSIZE);
-//     memset(buf, 0, BUFSIZE);
+    //     int dayepoch = epoch / (24*3600);
+    //     dayepoch *= (24*3600);
+    // 
+    //     char* buf = (char*)malloc(BUFSIZE);
+    //     memset(buf, 0, BUFSIZE);
 
     if(eq(part, MINUTE)) {
         ts.tm_sec = 0;
         strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
-//         epoch /= 60;
-//         epoch *= 60;
-//         sprintf(part, "%d", epoch);
-//         return stimestamp(part);
+        //         epoch /= 60;
+        //         epoch *= 60;
+        //         sprintf(part, "%d", epoch);
+        //         return stimestamp(part);
     }
     else if(eq(part, HOUR)){
         ts.tm_sec = 0;
         ts.tm_min = 0;
         strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
-//         epoch /= 3600;
-//         epoch *= 3600;
-//         sprintf(part, "%d", epoch);
-//         return stimestamp(part);
+        //         epoch /= 3600;
+        //         epoch *= 3600;
+        //         sprintf(part, "%d", epoch);
+        //         return stimestamp(part);
     }
     else if(eq(part, DAY)) {
         ts.tm_sec = 0;
         ts.tm_min = 0;
         ts.tm_hour = 0;
         strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d %T", &ts);
-//         epoch = dayepoch;
-//         sprintf(part, "%d", epoch);
-//         strcpy(timestamp, part);
-//         memset(part, 0, partSIZE);
-//         sprintf(part, "%s-%s-%s", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)), sdate_buf(DAY, sdate(part)) );
-//         return part;
+        //         epoch = dayepoch;
+        //         sprintf(part, "%d", epoch);
+        //         strcpy(timestamp, part);
+        //         memset(part, 0, partSIZE);
+        //         sprintf(part, "%s-%s-%s", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)), sdate_buf(DAY, sdate(part)) );
+        //         return part;
     }
     else if(eq(part, MONTH)) {
         ts.tm_sec = 0;
@@ -636,12 +674,12 @@ char* sdate_trunc(char* part, char* timestamp) {
         ts.tm_hour = 0;
         ts.tm_mday = 1;
         strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d", &ts); 
-//         epoch = dayepoch;
-//         sprintf(part, "%d", epoch);
-//         strcpy(timestamp, part);
-//         memset(part, 0, partSIZE);
-//         sprintf(part, "%s-%s-01", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)));
-//         return part;
+        //         epoch = dayepoch;
+        //         sprintf(part, "%d", epoch);
+        //         strcpy(timestamp, part);
+        //         memset(part, 0, partSIZE);
+        //         sprintf(part, "%s-%s-01", sdate_buf(YEAR, sdate(part)), sdate_buf(MONTH, sdate(part)));
+        //         return part;
     }
     else if(eq(part, YEAR)) {
         ts.tm_sec = 0;
@@ -650,49 +688,23 @@ char* sdate_trunc(char* part, char* timestamp) {
         ts.tm_mday = 1;
         ts.tm_mon = 0;
         strftime(buf, sizeof(buf)*sizeof(char*), "%Y-%m-%d", &ts);
-        
-//         epoch = dayepoch;
-//         sprintf(part, "%d", epoch);
-//         strcpy(timestamp, part);
-//         memset(part, 0, partSIZE);
-//         sprintf(part, "%s-01-01", sdate_buf(YEAR, sdate(part)) );
-//         return part;
+
+        //         epoch = dayepoch;
+        //         sprintf(part, "%d", epoch);
+        //         strcpy(timestamp, part);
+        //         memset(part, 0, partSIZE);
+        //         sprintf(part, "%s-01-01", sdate_buf(YEAR, sdate(part)) );
+        //         return part;
     }
     strcpy(timestamp, buf);
     return timestamp;
 }
 
-
+//AGGREGATE FUNCTIONS
+//===================
+// Ideas from
+// https://www.postgresql.org/docs/9.5/static/functions-aggregate.html
 ...
+do 'lib/Variance.c';
+// do 'lib/Corr.c';
 
-%AliciaFuncs = (
-        slower => 1,
-        supper => 1,
-        sreverse => 1,
-        sleft => 2,
-        sright => 2,
-        sindex => 2,
-        ssubstr => 3,
-        suc_words => 1,
-        sascii => 1,
-        schr => 1,
-        sbtrim => 2,
-        srpad => 3,
-        slpad => 3,
-        sreplace => 3,
-        srepeat => 2,
-        ssplit_part => 3,
-        sto_print => 1,
-        sto_ascii => 1,
-        sstrtotime => 1,
-        sdate => 1,
-        stimestamp => 1,
-        sage => 2,
-        scurrent_date => 0,
-        scurrent_time => 0,
-        scurrent_timestamp => 0,
-        sdate_part => 2,
-        sdate_trunc => 2
-        );
-
-        %AliciaAggs = ();

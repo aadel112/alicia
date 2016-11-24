@@ -375,6 +375,16 @@ my $register_lib = sub {
     }
     undef %AliciaFuncs;
 
+#     foreach my $f ( keys %AliciaAggs ) {
+#         my $s = eval '\&' . $f;
+#         my ($argc, $not_deterministic) =  split /\|/, $AliciaAggs{$f};
+#         $self->{conn}->sqlite_create_function(
+#             $f, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
+#         );
+#     }
+#     undef %AliciaAggs;
+
+
     return $self;
 };
 
