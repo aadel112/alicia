@@ -30,7 +30,8 @@
 );
 
 %AliciaAggs = (
-    variance => 1
+    Variance => 1,
+    Corr => 2
 );
 
 
@@ -706,5 +707,5 @@ char* sdate_trunc(char* part, char* timestamp) {
 // https://www.postgresql.org/docs/9.5/static/functions-aggregate.html
 ...
 do 'lib/Variance.c';
-// do 'lib/Corr.c';
+do 'lib/Corr.c';
 

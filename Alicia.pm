@@ -365,7 +365,7 @@ my $register_lib = sub {
     my $self = shift;
     my $lib = shift;
 
-    require $lib if( -e $lib );
+    do $lib if( -e $lib );
     foreach my $f ( keys %AliciaFuncs ) {
         my $s = eval '\&' . $f;
         my ($argc, $not_deterministic) =  split /\|/, $AliciaFuncs{$f};
@@ -375,14 +375,14 @@ my $register_lib = sub {
     }
     undef %AliciaFuncs;
 
-#     foreach my $f ( keys %AliciaAggs ) {
+    foreach my $f ( keys %AliciaAggs ) {
 #         my $s = eval '\&' . $f;
-#         my ($argc, $not_deterministic) =  split /\|/, $AliciaAggs{$f};
-#         $self->{conn}->sqlite_create_function(
-#             $f, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
-#         );
-#     }
-#     undef %AliciaAggs;
+        my ($argc, $not_deterministic) =  split /\|/, $AliciaAggs{$f};
+        $self->{conn}->sqlite_create_aggregate(
+            $f, $argc, $f, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
+        );
+    }
+    undef %AliciaAggs;
 
 
     return $self;

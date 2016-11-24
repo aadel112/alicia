@@ -1,6 +1,5 @@
 use Data::Dumper;
 do 'lib/libAlicia.c';
-# do 'lib/Variance.c';
 # die();
 
 sub a {
@@ -100,27 +99,20 @@ setup_date_vars();
 
 #AGGREGATES
 #==========
-# print Dumper(%Variance::);
 $v = Variance->new();
-# print Dumper($v); die();
 my @values = (10, 9, 2, 3, 5, 7);
-foreach my $val ( @values ) {
-    $v->step($val);
-}
-# die();
+foreach my $val ( @values ) {$v->step($val);}
 $variance = $v->finalize();
-
-print $variance . "\n";
-
+a($variance == 10.4, 'variance');
 
 
-# variance_new();
-# my @values = (10, 9, 2, 3, 5, 7);
-# foreach my $val ( @values ) {
-#     variance_step($val);
-# }
-# $variance = variance_finalize();
-# 
-# print $variance . "\n";
+$c = Corr->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$corr = $c->finalize();
+a(sprintf("%.04f", $corr) eq "0.5298", 'corr');
 
- 
+
