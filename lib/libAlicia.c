@@ -1,4 +1,3 @@
-
 %AliciaFuncs = (
     slower => 1,
     supper => 1,
@@ -30,8 +29,21 @@
 );
 
 %AliciaAggs = (
-    Variance => 1,
-    Corr => 2
+    Corr => 2,
+    Covar_Samp => 2,
+    Covar_Pop => 2,
+    Regr_Avgx => 2,
+    Regr_Avgy => 2,
+    Regr_Count => 2,
+    Regr_Slope => 2,
+    Regr_Intercept => 2,
+    Regr_Sxx => 2,
+    Regr_Syy => 2,
+    Regr_Sxy => 2,
+    Stddev_Samp => 1,
+    Stddev_Pop => 1,
+    Var_Samp => 1,
+    Var_Pop => 1
 );
 
 
@@ -705,7 +717,195 @@ char* sdate_trunc(char* part, char* timestamp) {
 //===================
 // Ideas from
 // https://www.postgresql.org/docs/9.5/static/functions-aggregate.html
+//Got the reg calculations from oracle's docs
+//https://docs.oracle.com/cd/B28359_01/server.111/b28286/functions139.htm#SQLRF00696
+
+double covar_sample( SV* arr_ref ) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    int size = n / 2;
+    int div = 0;
+
+    double v, suma = 0, sumb = 0, meana, meanb, sos = 0;
+    double A[size];
+    double B[size];
+
+    for(i=0;i<n;++i) {
+        div = i/2;
+        v = SvNV(*av_fetch(a, i, 0));
+        if(i%2) {
+            sumb += v;
+            B[div] = v;
+        }
+        else {
+            suma += v;
+            A[div] = v;
+        }
+    }
+    ++div;
+    meana = suma / div;
+    meanb = sumb / div;
+
+    for(i=0;i<div;++i) {
+        sos += (A[i] - meana) * (B[i] - meanb);
+    }
+    
+    return sos / (div - 1);
+}
+
+double covar_population( SV* arr_ref ) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    int size = n / 2;
+    int div = 0;
+
+    double v, suma = 0, sumb = 0, meana, meanb, sos = 0;
+    double A[size];
+    double B[size];
+
+    for(i=0;i<n;++i) {
+        div = i/2;
+        v = SvNV(*av_fetch(a, i, 0));
+        if(i%2) {
+            sumb += v;
+            B[div] = v;
+        }
+        else {
+            suma += v;
+            A[div] = v;
+        }
+    }
+    ++div;
+    meana = suma / div;
+    meanb = sumb / div;
+
+    for(i=0;i<div;++i) {
+        sos += (A[i] - meana) * (B[i] - meanb);
+    }
+    
+    return sos / (div);
+}
+
+double var_population(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    
+    double mu = 0;
+    for(i=0;i<n;++i) {
+        mu += SvNV(*av_fetch(a, i, 0));
+    }
+    mu /= (double)n;
+
+    double sigma = 0;
+    for(i=0;i<n;++i) {
+        sigma += pow(SvNV(*av_fetch(a, i, 0)) - mu, 2);
+    }
+    sigma = sigma / (double)(n);
+    return sigma;
+}
+
+double cvar_population(double a[], int n) {
+    int i;
+    if( n < 2 )
+        return 0;
+    
+    double mu = 0;
+    for(i=0;i<n;++i) {
+        mu += a[i];
+    }
+    mu /= (double)n;
+
+    double sigma = 0;
+    for(i=0;i<n;++i) {
+        sigma += pow(a[i] - mu, 2);
+    }
+    sigma = sigma / (double)(n);
+    return sigma;
+}
+
+double var_sample(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    
+    double mu = 0;
+    for(i=0;i<n;++i) {
+        mu += SvNV(*av_fetch(a, i, 0));
+    }
+    mu /= (double)n;
+
+    double sigma = 0;
+    for(i=0;i<n;++i) {
+        sigma += pow(SvNV(*av_fetch(a, i, 0)) - mu, 2);
+    }
+    sigma = sigma / (double)(n-1);
+    return sigma;
+}
+
+double mean(double a[], int n) {
+    int i;
+    if( n < 2 )
+        return 0;
+    double sum = 0;
+    for(i=0;i<n;++i) {
+        sum += a[i];
+    }
+    return sum / n;
+}
+
+double regr_slope(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    int size = n / 2;
+    int div = 0;
+
+    double B[size];
+
+    for(i=0;i<n;++i) {
+        div = i/2;
+        if(i%2 != 0) {
+            B[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+
+    return covar_population(arr_ref) 
+        / cvar_population(B, size);
+}
+
+int regr_count(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    ssize_t n = av_tindex(a) + 1;
+    return (int)n/2; 
+}
+
 ...
-do 'lib/Variance.c';
 do 'lib/Corr.c';
+do 'lib/Covar_Pop.c';
+do 'lib/Covar_Samp.c';
+do 'lib/Regr_Avgx.c';
+do 'lib/Regr_Avgy.c';
+do 'lib/Regr_Count.c';
+do 'lib/Regr_Intercept.c';
+do 'lib/Regr_Slope.c';
+do 'lib/Regr_Sxx.c';
+do 'lib/Regr_Sxy.c';
+do 'lib/Regr_Syy.c';
+do 'lib/Stddev_Samp.c';
+do 'lib/Stddev_Pop.c';
+do 'lib/Var_Samp.c';
+do 'lib/Var_Pop.c';
 

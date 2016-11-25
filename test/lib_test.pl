@@ -1,6 +1,6 @@
 use Data::Dumper;
 do 'lib/libAlicia.c';
-# die();
+die();
 
 sub a {
     my ($cond, $msg ) = @_;
