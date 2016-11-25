@@ -105,7 +105,6 @@ foreach my $val ( @values ) {$v->step($val);}
 $variance = $v->finalize();
 a($variance == 10.4, 'variance samp');
 
-
 $c = Corr->new();
 my @v1 = (43, 21, 25, 42, 57, 59);
 my @v2 = (99, 65, 79,  75, 87, 81);
@@ -117,8 +116,80 @@ a(sprintf("%.04f", $corr) eq "0.5298", 'corr');
 
 $s = Stddev_Samp->new();
 for(my $i = 0; $i < scalar @values; ++$i ) {
-    $s->step($v1[$i], $v2[$i]) if($v1[$i]);
+    $s->step($v1[$i]);
 }
 $stddev = $s->finalize();
-print $stddev ."\n";
+a(sprintf("%.04f", $stddev) == 15.7533, 'stddev sample');
+
+$s = Stddev_Pop->new();
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $s->step($v1[$i]);
+}
+$stddev = $s->finalize();
+a(sprintf("%.04f", $stddev) == 14.3807, 'stddev pop');
+
+$c = Covar_Samp->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%.01f", $v) eq "95.6", 'covar_samp');
+
+$c = Covar_Pop->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%.01f", $v) eq "79.7", 'covar_samp');
+
+$c = Regr_Count->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a( $v == 6, 'regr_count');
+
+$c = Regr_Avgx->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%.03f", $v) eq "41.167", 'regr_avgx');
+
+$c = Regr_Avgy->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%d", $v) eq "81", 'regr_avgy');
+
+$c = Regr_Intercept->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%.3f", $v) eq "65.142", 'regr_intercept');
+
+$c = Regr_Slope->new();
+my @v1 = (43, 21, 25, 42, 57, 59);
+my @v2 = (99, 65, 79,  75, 87, 81);
+for(my $i = 0; $i < scalar @values; ++$i ) {
+    $c->step($v1[$i], $v2[$i]) if($v1[$i]);
+}
+$v = $c->finalize();
+a(sprintf("%.3f", $v) eq "0.385", 'regr_slope');
+
+
 

@@ -877,7 +877,7 @@ double regr_slope(SV* arr_ref) {
 
     for(i=0;i<n;++i) {
         div = i/2;
-        if(i%2 != 0) {
+        if(i%2 == 0) {
             B[div] = SvNV(*av_fetch(a, i, 0));
         }
     }
@@ -892,21 +892,212 @@ int regr_count(SV* arr_ref) {
     return (int)n/2; 
 }
 
-...
-do 'lib/Var_Samp.c';
-do 'lib/Var_Pop.c';
-do 'lib/Corr.c';
-do 'lib/Covar_Pop.c';
-do 'lib/Covar_Samp.c';
-do 'lib/Regr_Avgx.c';
-do 'lib/Regr_Avgy.c';
-do 'lib/Regr_Count.c';
-do 'lib/Regr_Intercept.c';
-do 'lib/Regr_Slope.c';
-do 'lib/Regr_Sxx.c';
-do 'lib/Regr_Sxy.c';
-do 'lib/Regr_Syy.c';
-do 'lib/Stddev_Samp.c';
-do 'lib/Stddev_Pop.c';
+//Non Helpers
+double corr(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    int size = n / 2;
+    int div = 0;
 
+    double xx[size];
+    double yy[size];
+    double v, xsum = 0, ysum = 0, xysum = 0, 
+           xsqsum = 0, ysqsum = 0, num, deno, coeff;
+
+    for(i=0;i<n;++i) {
+        div = i/2;
+        v = SvNV(*av_fetch(a, i, 0));
+        if(i%2) {
+            yy[div] = v;
+            xsum += xx[div];
+            ysum += yy[div];
+            xysum += (xx[div] * yy[div]);
+            xsqsum += (xx[div] * xx[div]);
+            ysqsum += (yy[div] * yy[div]);
+        }
+        else {
+            xx[div] = v;
+        }
+    }
+    ++div;
+
+	num = ((div * xysum) - (xsum * ysum));
+	deno = ((div * xsqsum - xsum * xsum)* (div * ysqsum - ysum * ysum));
+
+	coeff = num / sqrt(deno);
+
+    return coeff;
+}
+
+double stddev_population(SV* self) {
+    double m, standardDeviation = 0.0;
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = (int)av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+
+    double data[n];
+    for(i=0;i<n;++i){
+        data[i] = SvNV(*av_fetch(a, i, 0));
+    }
+    m = mean(data, n);
+
+    for(i=0; i<n; ++i)
+        standardDeviation += pow(data[i] - m, 2);
+
+    return sqrt(standardDeviation/(n));
+}
+
+double stddev_sample(SV* self) {
+    double m, standardDeviation = 0.0;
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = (int)av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+
+    double data[n];
+    for(i=0;i<n;++i){
+        data[i] = SvNV(*av_fetch(a, i, 0));
+    }
+    m = mean(data, n);
+
+    for(i=0; i<n; ++i)
+        standardDeviation += pow(data[i] - m, 2);
+
+    return sqrt(standardDeviation/(n-1));
+}
+
+double regr_avgx(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = regr_count(self);
+    if( n < 1 )
+        return 0;
+    int div = 0;
+
+    double B[n];
+
+    for(i=0;i<n*2;++i) {
+        div = i/2;
+        if(i%2 == 0) {
+            B[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+
+    return mean(B, n);
+}
+
+double regr_avgy(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = regr_count(self);
+    if( n < 1 )
+        return 0;
+    int div = 0;
+
+    double A[n];
+
+    for(i=0;i<n*2;++i) {
+        div = i/2;
+        if(i%2 != 0) {
+            A[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+
+    return mean(A, n);
+}
+
+double regr_intercept(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    int size = n / 2;
+    int div = 0;
+
+    double A[size], B[size];
+
+    for(i=0;i<n;++i) {
+        div = i/2;
+        if(i%2 != 0) {
+            A[div] = SvNV(*av_fetch(a, i, 0));
+        }
+        else {
+            B[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+    return mean(A, size) - regr_slope(self) * mean(B, size);
+}
+
+double regr_sxx(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = regr_count(self);
+    if( n < 1 )
+        return 0;
+    int div = 0;
+
+    double B[n];
+
+    for(i=0;i<n*2;++i) {
+        div = i/2;
+        if(i%2 == 0) {
+            B[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+
+    return n * cvar_population(B, n);
+}
+
+double regr_syy(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    int n = regr_count(self);
+    if( n < 1 )
+        return 0;
+    int div = 0;
+
+    double A[n];
+
+    for(i=0;i<n*2;++i) {
+        div = i/2;
+        if(i%2 != 0) {
+            A[div] = SvNV(*av_fetch(a, i, 0));
+        }
+    }
+
+    return n * cvar_population(A, n);
+}
+
+double regr_sxy(SV* self) {
+    int n = regr_count(self);
+    if( n < 1 )
+        return 0;
+
+    return n * covar_population(self);
+}
+
+...
+
+do 'lib/Var_Samp.pm';
+do 'lib/Var_Pop.pm';
+do 'lib/Corr.pm';
+do 'lib/Covar_Pop.pm';
+do 'lib/Covar_Samp.pm';
+do 'lib/Regr_Avgx.pm';
+do 'lib/Regr_Avgy.pm';
+do 'lib/Regr_Count.pm';
+do 'lib/Regr_Intercept.pm';
+do 'lib/Regr_Slope.pm';
+do 'lib/Regr_Sxx.pm';
+do 'lib/Regr_Sxy.pm';
+do 'lib/Regr_Syy.pm';
+do 'lib/Stddev_Samp.pm';
+do 'lib/Stddev_Pop.pm';
 
