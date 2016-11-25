@@ -792,6 +792,27 @@ double covar_population( SV* arr_ref ) {
     return sos / (div);
 }
 
+double var_sample(SV* arr_ref) {
+    AV* a = (AV*)SvRV(arr_ref);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    if( n < 2 )
+        return 0;
+    
+    double mu = 0;
+    for(i=0;i<n;++i) {
+        mu += SvNV(*av_fetch(a, i, 0));
+    }
+    mu /= (double)n;
+
+    double sigma = 0;
+    for(i=0;i<n;++i) {
+        sigma += pow(SvNV(*av_fetch(a, i, 0)) - mu, 2);
+    }
+    sigma = sigma / (double)(n-1);
+    return sigma;
+}
+
 double var_population(SV* arr_ref) {
     AV* a = (AV*)SvRV(arr_ref);
     int i;
@@ -829,27 +850,6 @@ double cvar_population(double a[], int n) {
         sigma += pow(a[i] - mu, 2);
     }
     sigma = sigma / (double)(n);
-    return sigma;
-}
-
-double var_sample(SV* arr_ref) {
-    AV* a = (AV*)SvRV(arr_ref);
-    int i;
-    ssize_t n = av_tindex(a) + 1;
-    if( n < 2 )
-        return 0;
-    
-    double mu = 0;
-    for(i=0;i<n;++i) {
-        mu += SvNV(*av_fetch(a, i, 0));
-    }
-    mu /= (double)n;
-
-    double sigma = 0;
-    for(i=0;i<n;++i) {
-        sigma += pow(SvNV(*av_fetch(a, i, 0)) - mu, 2);
-    }
-    sigma = sigma / (double)(n-1);
     return sigma;
 }
 
@@ -893,6 +893,8 @@ int regr_count(SV* arr_ref) {
 }
 
 ...
+do 'lib/Var_Samp.c';
+do 'lib/Var_Pop.c';
 do 'lib/Corr.c';
 do 'lib/Covar_Pop.c';
 do 'lib/Covar_Samp.c';
@@ -906,6 +908,5 @@ do 'lib/Regr_Sxy.c';
 do 'lib/Regr_Syy.c';
 do 'lib/Stddev_Samp.c';
 do 'lib/Stddev_Pop.c';
-do 'lib/Var_Samp.c';
-do 'lib/Var_Pop.c';
+
 

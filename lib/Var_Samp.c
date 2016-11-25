@@ -5,5 +5,6 @@ use Inline C => << '...';
 double finalize(SV* self) {
     return var_sample(self);
 }
+
 ...
 

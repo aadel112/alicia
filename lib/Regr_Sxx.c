@@ -14,7 +14,7 @@ double finalize(SV* self) {
         return 0;
     int div = 0;
 
-    double B[size];
+    double B[n];
 
     for(i=0;i<n*2;++i) {
         div = i/2;
