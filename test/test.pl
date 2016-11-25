@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
-do 'Alicia';
+# do 'Alicia';
+use Alicia;
 use Data::Dumper;
 
 $lrc = 0;
