@@ -46,6 +46,139 @@
     Var_Pop => 1
 );
 
+package Regr_Sxx {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_sxx($_[0]) }
+};
+
+package Regr_Syy {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_syy($_[0]) }
+};
+
+package Regr_Sxy {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_sxy($_[0]) }
+};
+
+package Regr_Slope {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_slope($_[0]) }
+};
+
+package Regr_Intercept {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_intercept($_[0]) }
+};
+
+package Regr_Count {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize{ main::regr_count($_[0]) }
+};
+
+package Var_Pop {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { main::var_population($_[0]) }
+};
+
+package Var_Samp{
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { main::var_sample($_[0]) }
+};
+
+package Stddev_Samp {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { main::stddev_sample($_[0]) }
+};
+
+package Stddev_Pop {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { main::stddev_population($_[0]) }
+};
+
+package Corr {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::corr($_[0]) }
+};
+
+package Covar_Pop {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize{ main::covar_population($_[0]) }
+};
+
+package Covar_Samp {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize{ main::covar_sample($_[0]) }
+};
+
+package Regr_Avgx {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_avgx($_[0]) }
+};
+
+package Regr_Avgy {
+    sub new { bless [], shift; }
+    sub step { 
+        my $self = shift; 
+        push @$self, ($_[0]?$_[0]:0); 
+        push @$self, ($_[1]?$_[1]:0);
+    }
+    sub finalize { main::regr_avgy($_[0]) }
+};
 
 use Inline C => << '...';
 
@@ -1082,22 +1215,5 @@ double regr_sxy(SV* self) {
 
     return n * covar_population(self);
 }
-
 ...
-
-do 'lib/Var_Samp.pm';
-do 'lib/Var_Pop.pm';
-do 'lib/Corr.pm';
-do 'lib/Covar_Pop.pm';
-do 'lib/Covar_Samp.pm';
-do 'lib/Regr_Avgx.pm';
-do 'lib/Regr_Avgy.pm';
-do 'lib/Regr_Count.pm';
-do 'lib/Regr_Intercept.pm';
-do 'lib/Regr_Slope.pm';
-do 'lib/Regr_Sxx.pm';
-do 'lib/Regr_Sxy.pm';
-do 'lib/Regr_Syy.pm';
-do 'lib/Stddev_Samp.pm';
-do 'lib/Stddev_Pop.pm';
 
