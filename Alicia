@@ -100,6 +100,7 @@ package Alicia;
 # use strict;
 # use warnings;
 # use Memoize;
+use File::Glob ':globally'; 
 use DBI;
 use Text::CSV_XS qw( csv );
 use Digest::CRC qw(crc32);
@@ -132,6 +133,7 @@ my $parse_read_instr = sub {
     my $offset = 0;
     my $started = 0;
     my $syntax_error_token = -1;
+    my $is_file = 0;
     die("Syntax Error on statememt $stmt_no, not enough tokens\n") unless( $len >= 5 );
     for( my $i = 0; $i < $len; ++$i ) {
         if( !$started and uc $word_ref->[$i] ne 'READ' ) {
@@ -142,11 +144,14 @@ my $parse_read_instr = sub {
             $started = 1;
         }
         my $e = $word_ref->[$i];
-        if( $i - $offset == 1 and uc $e ne 'FILE' ) {
+        if( $i - $offset == 1 and ( uc $e ne 'FILE' and uc $e ne 'GLOB') ) {
             die( "Syntax Error on statememt $stmt_no, token $e should be FILE\n" );
         }
-        elsif( $i - $offset == 2 and ( ! -e $e or ! -r $e ) ) {
-            die("Check file permissions for $e on statememt $stmt_no\n");
+        elsif( $i - $offset == 2 ) {
+            $is_file = uc $word_ref->[$i-$offset-1] eq 'FILE';
+            if( ( ! -e $e or ! -r $e ) and $is_file  ) {
+                die("Check file permissions for $e on statememt $stmt_no\n");
+            }
         }
         elsif( $i - $offset == 3 and uc $e ne 'INTO' ) {
             die("Syntax Error on statememt $stmt_no, token $e should be INTO\n");
@@ -156,6 +161,9 @@ my $parse_read_instr = sub {
         }
     }
     my $file = $word_ref->[$offset+2];
+    $file =~ s/^['"]*//g;
+    $file =~ s/['"]*$//g;
+
     my $in = $word_ref->[$offset+4];
 
     my @rest = splice @$word_ref, 6, scalar(@$word_ref) - 6;
@@ -164,7 +172,8 @@ my $parse_read_instr = sub {
 
     %instr = (
         INSTR=> 'READ',
-        FILE => $file,
+        FILE => $is_file ? $file : undef,
+        GLOB => !$is_file ? $file : undef,
         TABLE => $in,
         WITH =>\%csv_ops
     );
@@ -205,6 +214,9 @@ my $parse_write_instr = sub {
         }
     }
     my $file = $word_ref->[$offset+2];
+    $file =~ s/^['"]*//g;
+    $file =~ s/['"]*$//g;   
+
     my $out = $word_ref->[$offset+4];
 
     my @rest = splice @$word_ref, 6, scalar(@$word_ref) - 6;
@@ -350,11 +362,11 @@ my $fetch = sub {
         foreach my $k ( keys %$print_options ) {
             $csv->{$k} = $print_options->{$k};
         }
-       
+        
         $csv->say( defined $print_options->{file} ? $fh : \*STDOUT, 
             $_
         ) for @arr;
-        
+       
         close $fh;
     }
 
@@ -376,7 +388,6 @@ my $register_lib = sub {
     undef %AliciaFuncs;
 
     foreach my $f ( keys %AliciaAggs ) {
-#         my $s = eval '\&' . $f;
         my ($argc, $not_deterministic) =  split /\|/, $AliciaAggs{$f};
         $self->{conn}->sqlite_create_aggregate(
             $f, $argc, $f, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
@@ -507,16 +518,20 @@ sub parse_and_execute_statements {
         push @ins, $instr_ref;
     }
 
+#     print Dumper(@ins); die();
 
     foreach my $s ( @ins ) {
         my %h = %$s;
 
         if( $h{INSTR} eq 'READ' ) {
-            my $a1 = $self->$get_set($h{FILE});
+            my $is_file = defined $h{FILE};
+
+            my $a1 = $self->$get_set($is_file?$h{FILE}:$h{GLOB});
+
             my $a2 = $self->$get_set($h{TABLE});
-            my $a3 = $h->{WITH};
-            $self->$DEBUG("Read '$a1', '$a2'", __LINE__);
-            $self->read($a1, $a2, $a3);        
+            my $a3 = $self->$get_set($h{WITH});
+            $self->$DEBUG("Read '$a1', '$a2', '$is_file', '$a3'", __LINE__);
+            $self->read($a1, $a2, $is_file, $a3);
         }
         elsif( $h{INSTR} eq 'WRITE' ) {
             my $a1 = $self->$get_set($h{FILE});
@@ -618,11 +633,10 @@ sub exec {
 }
 
 sub read {
-    my ( $self, $file, $table, $read_options ) = @_;
+    my ( $self, $file, $table, $is_file, $read_options ) = @_;
     my $csql = "CREATE TABLE IF NOT EXISTS $table (";
     my $sql = "INSERT INTO $table VALUES(";
 
-    return $self if( not -s $file );
     
     my $sth;
     my $csv = $self->{csv};
@@ -632,32 +646,38 @@ sub read {
         }
     }
 
-    open my $fh, "<:encoding(utf8)", $file;
+    my $glob = !$is_file ? $file : undef;
+    my $file = !$is_file ? undef : $file;
+    my @files = $is_file ? ( $file ) : eval "<$glob>";
+  
     my $i = 0;
-    while (my $row = $csv->getline ($fh)) {
-        if(!$csv->{sep_char}){
-            my $rs = join '', @$row;
-            my @ra = ( $rs );
-            $row = \@ra;
-        }
-        
-        if( not $i ) {
-            my $os = '';
-            my @params = ();
-            my @cols = ();
-            for( my $z = 0; $z < scalar @$row; ++$z ) {
-                push @params, '?';
-                push @cols, "f$z text";
+    foreach my $file ( @files ) {
+        open my $fh, "<:encoding(utf8)", $file;
+        while (my $row = $csv->getline ($fh)) {
+            if(!$csv->{sep_char}){
+                my $rs = join '', @$row;
+                my @ra = ( $rs );
+                $row = \@ra;
             }
-            $csql .= (( join ",", @cols ) . ")");
-            $self->{conn}->do($csql);
-            $sql .= (( join ",", @params ) . ")");
-            $sth = $self->{conn}->prepare($sql);
+            
+            if( not $i ) {
+                my $os = '';
+                my @params = ();
+                my @cols = ();
+                for( my $z = 0; $z < scalar @$row; ++$z ) {
+                    push @params, '?';
+                    push @cols, "f$z text";
+                }
+                $csql .= (( join ",", @cols ) . ")");
+                $self->{conn}->do($csql);
+                $sql .= (( join ",", @params ) . ")");
+                $sth = $self->{conn}->prepare($sql);
+            }
+            $sth->execute( @$row );
+            ++$i;
         }
-        $sth->execute( @$row );
-        ++$i;
+        close $fh;
     }
-    close $fh;
     return $self;
 }
 
@@ -670,4 +690,5 @@ sub write {
     my $sql = "SELECT * FROM $table";
     return $self->exec($sql, \%op);
 }
+
 

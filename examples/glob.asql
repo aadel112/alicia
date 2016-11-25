@@ -1,0 +1,7 @@
+READ GLOB '/etc/*.conf' INTO atbl
+WITH ( sep_char => undef, quote_char => undef );
+
+WRITE FILE 'out/etcout' FROM Atbl;
+--WITH ( sep_char => undef, quote_char => undef );
+
+--SELECT * FROM Atbl;
