@@ -63,7 +63,7 @@ ex: SELECT \* FROM \_st;
 
 METHODS
 
-`NOTE`  
+**NOTE**  
 These methods are specifix to Alicia.pm, using Alicia as a perl module instead of a CLI.
 
 `new`  

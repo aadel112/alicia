@@ -75,7 +75,7 @@ ex: SELECT * FROM _st;
 
 =over 12
 
-=item C<NOTE>
+=item B<NOTE>
 
 These methods are specifix to Alicia.pm, using Alicia as a perl module instead of a CLI.
 
