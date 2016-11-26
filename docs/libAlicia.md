@@ -2,7 +2,6 @@ libAlicia.c
 -----------
 Area|Function|Description|Parameters|Example|Example Return
 -----|--------|-----------|-------------|----------|-----------
-
 *S FUNCTIONS*|**slower**|Converts A field to all lower case text|a text field|`slower('HELLO')`|hello
 *S FUNCTIONS*|**supper**|Converts A field to all upper case text|a text field|`supper('hello')`|HELLO
 *S FUNCTIONS*|**sreverse**|Converts A field to the same text reversed|a text field|`sreverse('hello')`|olleh
