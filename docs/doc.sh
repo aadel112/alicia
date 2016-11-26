@@ -6,6 +6,6 @@ pod2html ../Alicia.pm > Alicia.html
 
 pandoc -f html -t markdown_github Alicia.html  > Alicia.md
 
-cat Alicia.md | grep -v ^\s*\- > Alicia.md.tmp && mv Alicia.md.tmp Alicia.md
+cat Alicia.md | grep -v ^\s*\- | grep -v '#METHOD'> Alicia.md.tmp && mv Alicia.md.tmp Alicia.md
 
 rm Alicia.html

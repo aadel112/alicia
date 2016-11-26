@@ -1,4 +1,3 @@
-    -   [METHODS](#METHODS)
 
 NAME
 ====
