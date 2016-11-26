@@ -64,8 +64,7 @@ use Inline C => << '...';
  * @function: slower
  * @example: slower('HELLO')
  * @example return: hello
- * @description: Converts A field to all lower case 
- * text
+ * @description: Converts A field to all lower case text
  * @parameters: a text field
  * @return: a text field
  */ 
@@ -84,8 +83,7 @@ char* slower( char* str ) {
  * @function: supper
  * @example: supper('hello')
  * @example return: HELLO
- * @description: Converts A field to all upper case 
- * text
+ * @description: Converts A field to all upper case text
  * @parameters: a text field
  * @return: a text field
  */ 
@@ -103,8 +101,7 @@ char* supper( char* str ) {
  * @function: sreverse
  * @example: sreverse('hello')
  * @example return: olleh
- * @description: Converts A field to the same text
- * reversed
+ * @description: Converts A field to the same text reversed
  * @parameters: a text field
  * @return: a text field
  */
@@ -146,8 +143,7 @@ char* sleft(char* str, int len) {
  * @function: sright
  * @example: sright('hello', 2)
  * @example return: lo
- * @description: returns the right len characters 
- * from the string str
+ * @description: returns the right len characters from the string str
  * @parameters: (str, len)
  * @return: a text field
  */
@@ -161,8 +157,7 @@ char* sright(char* str, int len) {
  * @function: sindex
  * @example: sindex('hello', 'll')
  * @example return: 2
- * @description: returns the 0 based index if 
- * the needle in haystack if it exists, else -1
+ * @description: returns the 0 based index if the needle in haystack if it exists, else -1
  * @parameters: (haystack, needle)
  * @return: int
  */
@@ -180,8 +175,7 @@ int sindex(char* haystack, char* needle) {
  * @function: ssubstr
  * @example: ssubstr('hello', 0, 3)
  * @example return: hel
- * @description: returns the portion of the string
- * from start for len characters, 0-based.
+ * @description: returns the portion of the string from start for len characters, 0-based.
  * @parameters: (str, start, len)
  * @return: a text field
  */
@@ -211,8 +205,7 @@ char* ssubstr(char* str, int start, int len) {
  * @function: suc_words
  * @example: suc_words('hello world')
  * @example return: Hello World
- * @description: returns the text field with 
- * words beginnings upper cased.
+ * @description: returns the text field with words beginnings upper cased.
  * @parameters: (str)
  * @return: a text field
  */
@@ -235,8 +228,7 @@ char* suc_words(char* str) {
  * @function: sascii
  * @example: sascii('A')
  * @example return: 65
- * @description: returns the ascii decimal value 
- * of the character passed
+ * @description: returns the ascii decimal value of the character passed
  * @parameters: (c)
  * @return: int
  */
@@ -249,8 +241,7 @@ int sascii(char c) {
  * @function: schr
  * @example: schr(65)
  * @example return: A
- * @description: returns the ascii char 
- * corresponding to int n
+ * @description: returns the ascii char corresponding to int n
  * @parameters: (n)
  * @return: char
  */
@@ -300,8 +291,7 @@ char* sbtrim(char* str, char* chars) {
  * @function: srpad
  * @example: srpad('x', 5, 'yz')
  * @example return: xyzyz
- * @description: returns str right-padded with fill 
- * repeatedly until it reaches length len
+ * @description: returns str right-padded with fill repeatedly until it reaches length len
  * @parameters: (str, len, fill)
  * @return: a text field
  */
@@ -336,8 +326,7 @@ char* srpad(char* str, int len, char* fill) {
  * @function: slpad
  * @example: slpad('x', 5, 'yz')
  * @example return: yzyzx
- * @description: returns str left-padded with fill
- * repeatedly until it reaches length len
+ * @description: returns str left-padded with fill repeatedly until it reaches length len
  * @parameters: (str, len, fill)
  * @return: a text field
  */
@@ -375,8 +364,7 @@ char* slpad(char* str, int len, char* fill) {
  * @function: sreplace
  * @example: sreplace('hello world', 'world', 'universe')
  * @example return: hello universe
- * @description: returns orig where rep is replaced
- * with with
+ * @description: returns orig where rep is replaced with with
  * @parameters: (orig, rep, with)
  * @return: a text field
  */
@@ -459,8 +447,7 @@ char* srepeat(char* str, int n) {
  * @function: ssplit_part
  * @example: ssplit_part('hello world', ' ', 1)
  * @example return: world
- * @description: returns the 0-based field from 
- * str split on delim
+ * @description: returns the 0-based field from  str split on delim
  * @parameters: (str, delim, field)
  * @return: a text field
  */
@@ -602,9 +589,7 @@ struct tm epoch_to_tm(int epoch) {
  * @function: sstrtotime
  * @example: sstrtotime('2016-11-05 03:14:59')
  * @example return: 1478315699
- * @description: not super functional, needs ro be 
- * coded out more. Only accepts 6 formats, 
- * and epoch times
+ * @description: not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times
  * returns the epoch if the date-like string
  * @parameters: (str)
  * @return: int epoch
@@ -673,8 +658,7 @@ okay:
  * @function: sdate
  * @example: sstrtotime('2016-11-05 03:14:59')
  * @example return: 2016-11-05
- * @description: returns the date only of 
- * the date-like string
+ * @description: returns the date only of  the date-like string
  * @parameters: (str)
  * @return: a text field
  */
@@ -703,8 +687,7 @@ char* sdate(char* str) {
  * @function: stimestamp
  * @example: stimestamp('2016-11-05')
  * @example return: 2016-11-05 00:00:00
- * @description: returns the timestamp 
- * the date-like string
+ * @description: returns the timestamp  the date-like string
  * @parameters: (str)
  * @return: a text field
  */
@@ -825,8 +808,7 @@ char* scurrent_timestamp() {
  * @function: sdate_part
  * @example: sdate_part('minute', '2016-11-25 14:33:32')
  * @example return: 33
- * @description: returns the piece of the timestamp specified as part
- * options are second, minute, hour, day, month, year, century, millenium, dow, doy
+ * @description: returns the piece of the timestamp specified as part; options are second, minute, hour, day, month, year, century, millenium, dow, doy
  * @parameters: (part, timestamp)
  * @return: a text field
  */
@@ -893,8 +875,7 @@ char* sdate_part(char* part, char* timestamp) {
  * @function: sdate_trunc
  * @example: sdate_part('minute', '2016-11-25 14:33:32')
  * @example return: 2016-11-25 14:33:00
- * @description: returns the timestamp or date truncated at part
- * options are minute, hour, day, month, year
+ * @description: returns the timestamp or date truncated at part; options are minute, hour, day, month, year
  * @parameters: (part, timestamp)
  * @return: a text field
  */
