@@ -20,15 +20,15 @@ Area|Function|Description|Parameters|Example|Example Return
 *S FUNCTIONS*|**ssplit_part**|returns the 0-based field from  str split on delim|(str, delim, field)|`ssplit_part('hello world', ' ', 1)`|world
 *S FUNCTIONS*|**sto_print**|returns the str with all non-printing characters removed|(str)|`sto_print('hello\nworld)`|helloworld
 *S FUNCTIONS*|**sto_ascii**|returns the str with all non-ascii characters removed|(str)|`sto_ascii('hello˚, ˳world')`|helloworld
-*S FUNCTIONS*|**sstrtotime**|not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times|(str)|`sstrtotime('2016-11-05 03`|1478315699
-*S FUNCTIONS*|**sdate**|returns the date only of  the date-like string|(str)|`sstrtotime('2016-11-05 03`|2016-11-05
-*S FUNCTIONS*|**stimestamp**|returns the timestamp  the date-like string|(str)|`stimestamp('2016-11-05')`|2016-11-05 00
-*S FUNCTIONS*|**sage**|returns the difference of date-like times e1 and e2|(e1, e2)|`sage('2016-11-05 03`|0 years 0 days 3 hours 14 minutes 59 seconds
+*S FUNCTIONS*|**sstrtotime**|not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times|(str)|`sstrtotime('2016-11-05 03:14:59')`|1478315699
+*S FUNCTIONS*|**sdate**|returns the date only of  the date-like string|(str)|`sstrtotime('2016-11-05 03:14:59')`|2016-11-05
+*S FUNCTIONS*|**stimestamp**|returns the timestamp  the date-like string|(str)|`stimestamp('2016-11-05')`|2016-11-05 00:00:00
+*S FUNCTIONS*|**sage**|returns the difference of date-like times e1 and e2|(e1, e2)|`sage('2016-11-05 03:14:59', '2016-11-05')`|0 years 0 days 3 hours 14 minutes 59 seconds
 *S FUNCTIONS*|**scurrent_date**|returns the current date|()|`scurrent_date()`|2016-11-25
-*S FUNCTIONS*|**scurrent_time**|returns the current time|()|`scurrent_time()`|14
-*S FUNCTIONS*|**scurrent_timestamp**|returns the current timestamp|()|`scurrent_timestamp()`|2016-11-25 14
-*S FUNCTIONS*|**sdate_part**|returns the piece of the timestamp specified as part; options are second, minute, hour, day, month, year, century, millenium, dow, doy|(part, timestamp)|`sdate_part('minute', '2016-11-25 14`|33
-*S FUNCTIONS*|**sdate_trunc**|returns the timestamp or date truncated at part; options are minute, hour, day, month, year|(part, timestamp)|`sdate_part('minute', '2016-11-25 14`|2016-11-25 14
+*S FUNCTIONS*|**scurrent_time**|returns the current time|()|`scurrent_time()`|14:33:32
+*S FUNCTIONS*|**scurrent_timestamp**|returns the current timestamp|()|`scurrent_timestamp()`|2016-11-25 14:33:32
+*S FUNCTIONS*|**sdate_part**|returns the piece of the timestamp specified as part; options are second, minute, hour, day, month, year, century, millenium, dow, doy|(part, timestamp)|`sdate_part('minute', '2016-11-25 14:33:32')`|33
+*S FUNCTIONS*|**sdate_trunc**|returns the timestamp or date truncated at part; options are minute, hour, day, month, year|(part, timestamp)|`sdate_part('minute', '2016-11-25 14:33:32')`|2016-11-25 14:33:00
 *A FUNCTIONS*|**covar_samp**|returns the sample covariance of expr1 and expr2|(expr1, expr2) both numeric|`covar_samp(expr1, expr2)`
 *A FUNCTIONS*|**covar_pop**|returns the population covariance of expr1 and expr2|(expr1, expr2) both numeric|`covar_samp(expr1, expr2)`
 *A FUNCTIONS*|**var_samp**|returns the sample variance of expr1|(expr1) numeric|`var_samp(expr1)`

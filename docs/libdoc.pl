@@ -14,7 +14,7 @@ my %so = (
     'example return' => 5
 );
 print "Area|Function|Description|Parameters|Example|Example Return\n";
-print "-----|--------|-----------|-------------|----------|-----------\n";
+print "-----|--------|-----------|-------------|----------|-----------";
 
 my %h = ();
 my $i = 0;
@@ -50,7 +50,8 @@ while ( my $line = <> ) {
         }
     }
     else {
-        my ( $l, $r ) = split /:/, $line;
+        my ( $l, @rest ) = split /:/, $line;
+        my $r = join ':', @rest;
         $l =~ s/\@//g;
         $l =~ s/\*//g;
         $l =~ s/^\s*|\s*$//g;

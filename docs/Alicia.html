@@ -1,0 +1,131 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a>
+    <ul>
+      <li><a href="#METHODS">METHODS</a></li>
+    </ul>
+  </li>
+  <li><a href="#LICENSE">LICENSE</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p><b>Alicia</b> - SQL As a high speed, all-purpose programming language</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<h2 id="METHODS">METHODS</h2>
+
+<dl>
+
+<dt id="new"><code>new</code></dt>
+<dd>
+
+<p>Returns a new Alicia object, initializes the symbol table, called _ST, creates its statements, indexes it; sets up an SQLite database as the memory-store. This is optimal for many reasons.</p>
+
+<ul>
+
+<p>SQLite stores its data in a hyper-compressed format. Of course, it dependa on your point-of-reference, but just comparing a perl hash to the same content dumped in SQLite; there&#39;s no comparison. I&#39;ve seen instances where one algorithm was projected to take 62% of system RAM for over two days. The same algorithm re-implemented in SQLite and indexed and analyzed takes 20 minutes, and takes 0.1% of system RAM. In another case, one algorithm took about 2 and a half minutes, and over 40% of system RAM. Reimplenting the same algorithm in SQLite took 0.1% of memory, and ran in under 5 seconds.</p>
+
+<p>So, memory is one great reason to use Alicia. Another is the immense speed of SQLite. When all concurrnency needs are ignored, and all persistence is removed, what do you have left? A very mature C project that is basically a drop-in replacement for a data structure.</p>
+
+<p>Using perl&#39;s DBD::SQLite driver is a no-brainer compared to other implementatios, at this point. It&#39;s compiled with optimizations (-O2). It&#39;s got JSON, regex extensions built into it, and it allows function and aggregate creation.</p>
+
+</ul>
+
+</dd>
+<dt id="main"><code>main</code></dt>
+<dd>
+
+<p>Called by the CLI, initializes a new Alicia object, parses, and executes the Alicia script or stdin.</p>
+
+</dd>
+<dt id="parse_and_execute_statements"><code>parse_and_execute_statements</code></dt>
+<dd>
+
+<p>parses the very limited set of Alicia specific instructions, and executes them as appropriate</p>
+
+</dd>
+<dt id="set"><code>set</code></dt>
+<dd>
+
+<p>is called by the execution if the instruction &quot;SET(&#39;something&#39;, &#39;value&#39;). You can nest these, such as SET(&#39;five&#39;, GET(&#39;three&#39;) + 2). This is pretty highly optimized, as it&#39;s very limited. These values are all stored in the symbol_table (_ST).</p>
+
+</dd>
+<dt id="get"><code>get</code></dt>
+<dd>
+
+<p>is called by the execution if the instruction GET(&#39;something&#39;) is used. These can be nested, for example, GET(GET(&#39;value references something in _ST&#39;))</p>
+
+</dd>
+<dt id="drop"><code>drop</code></dt>
+<dd>
+
+<p>Drops a table</p>
+
+</dd>
+<dt id="truncate"><code>truncate</code></dt>
+<dd>
+
+<p>Truncates a table</p>
+
+</dd>
+<dt id="exec"><code>exec</code></dt>
+<dd>
+
+<p>executes any sql that isn&#39;t in the limited instruction set</p>
+
+</dd>
+<dt id="read"><code>read</code></dt>
+<dd>
+
+<p>reads a delimited file into a table, where the fields will be all text, and will be named like f0, f1, f2, etc.</p>
+
+</dd>
+<dt id="write"><code>write</code></dt>
+<dd>
+
+<p>writes a table to a delimited file.</p>
+
+</dd>
+</dl>
+
+<h1 id="LICENSE">LICENSE</h1>
+
+<p>MIT License</p>
+
+<p>Copyright (c) 2016 Aaron Adel</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Aaron Adel -<a href="http://aadel112.com">http://aadel112.com</a>, -<a href="https://github.com/aadel112">https://github.com/aadel112</a></p>
+
+
+</body>
+
+</html>
+
+
