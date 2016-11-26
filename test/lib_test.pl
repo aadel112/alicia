@@ -1,5 +1,5 @@
 use Data::Dumper;
-do 'lib/libAlicia.c';
+do 'libAlicia.c';
 # die();
 
 sub a {

@@ -441,7 +441,7 @@ sub new {
         fetch => $dbh->prepare($fetch_sql)
     );
 
-    my $corelib = 'lib/libAlicia.c';
+    my $corelib = 'libAlicia.c';
 
     my $self = {
         conn => $dbh,
