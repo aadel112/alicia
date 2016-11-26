@@ -1,3 +1,5 @@
+# use Inline C => Config =>
+#     INC => '-I/home/aadel112/alicia/inc/';
 use Inline C => << '...';
 
 /*
@@ -21,6 +23,7 @@ use Inline C => << '...';
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. 
  */
+// #include <Alicia.h>
 
 //EVIL MACROS
 //===========
@@ -35,7 +38,6 @@ use Inline C => << '...';
 // #define SWAP_PRIMITIVE(a,b,t) do { t c = a; a = b; b = c;}while(0)
 
 #define eq(a,b) !strcmp(a,b)
-#define die exit(1)
 
 #define SECOND "second"
 #define MINUTE "minute"
@@ -52,6 +54,7 @@ use Inline C => << '...';
 #define MEDBUF 1024
 
 #define QLNV(l,i) (SvNOK(*av_fetch(l, i, 0)) ? ((double)SvNV(*av_fetch(l, i, 0))) : 0)
+
 
 //STRING FUNCTIONS
 //================
@@ -599,8 +602,10 @@ int sstrtotime(char *s) {
     struct tm tm;
     int dd, mm, yy;
     int hrs = 0, min = 0, sec = 0;
+    int f0, f1, f2, f3=0, f4=0, f5=0;
 
-    //     printf("GOT %s\n", s);
+    struct tm ts = epoch_to_tm((int)time(NULL));
+    int current_year = ts.tm_year + 1900;
 
     s = trim(s);
     int len = strlen(s);
@@ -613,32 +618,56 @@ int sstrtotime(char *s) {
         return atoi(s);
     }
 
-    if(sscanf(s, "%4d-%2d-%2d %2d:%2d:%2d", &yy, &mm, &dd, &hrs, &min, &sec) == 6)
+    if(sscanf(s, "%d-%d-%d %d:%d:%d", &f0, &f1, &f2, &f3, &f4, &f5) == 6)
         goto okay;
-    else if(sscanf(s, "%4d/%2d/%2d %2d:%2d:%2d", &yy, &mm, &dd, &hrs, &min, &sec) == 6)
+    else if(sscanf(s, "%d/%d/%d %d:%d:%d", &f0, &f1, &f2, &f3, &f4, &f5) == 6)
         goto okay;
-    else if(sscanf(s, "%2d/%2d/%4d %2d:%2d:%2d", &mm, &dd, &yy, &hrs, &min, &sec) == 6)
+    else if(sscanf(s, "%d-%d-%d", &f0, &f1, &f2) == 3)
         goto okay;
-    else if(sscanf(s, "%2d-%2d-%4d %2d:%2d:%2d", &mm, &dd, &yy, &hrs, &min, &sec) == 6)
+    else if(sscanf(s, "%d/%d/%d", &f0, &f1, &f2) == 3)
         goto okay;
-    else if(sscanf(s, "%4d-%2d-%2d", &yy, &mm, &dd) == 3)
+    else if(sscanf(s, "%d/%d/%d", &f0, &f1, &f2) == 3)
         goto okay;
-    else if(sscanf(s, "%4d/%2d/%2d", &yy, &mm, &dd) == 3)
-        goto okay;
-    else if(sscanf(s, "%2d/%2d/%4d", &mm, &dd, &yy) == 3)
-        goto okay;
-    else if(sscanf(s, "%2d-%2d-%4d", &mm, &dd, &yy) == 3)
-        goto okay;
-
     return 0;
 
 okay:
     //TODO - Do some sanity checking to rule out 2015-mar-35 and such
 
-    //     printf("PARSED %d, %d, %d\n", yy, mm, dd);
+    hrs = f3;
+    min = f4;
+    sec = f5;
+    
+    if(f0>=100){
+        yy=f0;
+        mm=f1;
+        dd=f2;
+    }
+    else if(f1>=100){
+        yy=f1;
+        mm=f0;
+        dd=f2;
+    }
+    else if(f2>=100){
+        yy=f2;
+        mm=f0;
+        dd=f1;
+    }
+    else {
+        //assume mmddyy
+        mm=f0;
+        dd=f1;
+        yy=f2;
+    }
+
+//     printf("PARSED %d, %d, %d\n", yy, mm, dd);
 
     if( mm > 12 || dd > 31 ) {
         swap(dd, mm);
+    }
+
+    if( yy < 100 ) {
+        int tmp = ((current_year / 100) * 100) + yy;
+        yy = tmp > current_year ? tmp - 100 : tmp;
     }
 
     tm.tm_sec = sec;
@@ -665,7 +694,6 @@ okay:
 char* sdate(char* str) {
     int epoch = sstrtotime(str);
 
-    //     char* buf = str + BUFSIZE * sizeof(char*);
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
@@ -676,8 +704,6 @@ char* sdate(char* str) {
     ts = *localtime(&t);
     strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d", &ts);
 
-    //     str = (char*)malloc(BUFSIZE * sizeof(char*));
-    //     strcpy(str, buf);
     return str;
 }
 
@@ -693,7 +719,6 @@ char* sdate(char* str) {
  */
 char* stimestamp(char* str) {
     int epoch = sstrtotime(str);
-    //     char* buf = str;
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
@@ -704,10 +729,6 @@ char* stimestamp(char* str) {
     ts = *localtime(&t);
     strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d %T", &ts);
 
-    //BAD
-
-    //     str = (char*)malloc(BUFSIZE * sizeof(char*));
-    //     strcpy(str, buf);
     return str;
 }
 
@@ -735,8 +756,6 @@ char* sage(char* timestamp1, char* timestamp2) {
     int diff = e1 - e2;
     int negative = diff < 0 ? 1 : 0;
     int sec = 0, min = 0, hour = 0, dd = 0, yy = 0;
-    //     char* buf = timestamp1 + BUFSIZE;
-    //     memset(buf, 0, BUFSIZE);
 
     if( negative ) {
         diff = -1 * diff;
@@ -754,8 +773,6 @@ char* sage(char* timestamp1, char* timestamp2) {
 
     sprintf(timestamp1, "%s%d years %d days %d hours %d minutes %d seconds", negative?"-":"", yy, dd, hour, min, sec);
 
-    //     strcpy(timestamp1, buf);
-    //     free( buf );
 
     return timestamp1;
 }
@@ -819,8 +836,6 @@ char* sdate_part(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
 
     char* buf = timestamp;
-    //     char* buf = (char*)malloc(BUFSIZE);
-    //     memset(buf, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
 

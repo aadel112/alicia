@@ -14,7 +14,7 @@ sub a {
 }
 
 sub setup_date_vars {
-    my @arr = ( 'ep','dt','ts','fmt2','yy','mm','dd','hh','min' );
+    my @arr = ( 'ep','ep2', 'dt','ts','fmt2','yy','mm','dd','hh','min' );
     foreach my $v ( @arr) {
         eval "\$o$v = \$$v if( !\$o$v );";
     }
@@ -49,6 +49,7 @@ a(suc_words('a bc') eq 'A Bc', 'uc_words');
 #DATE FUNCTIONS
 #==============
 $ep = `date +%s`;
+$ep2 = `date -d '2016-11-25' +%s`;
 $dt = `date -d\@'$ep' +%Y-%m-%d`;
 $ts = `date -d\@'$ep' '+%Y-%m-%d %H:%M:%S'`;
 $fmt2 = `date -d\@'$ep' '+%m/%d/%Y %H:%M:%S'`;
@@ -59,6 +60,7 @@ $hh = `date -d\@'$ep' +%H`;
 $min = `date -d\@'$ep' +%M`;
 
 chomp $ep;
+chomp $ep2;
 chomp $dt;
 chomp $ts;
 chomp $fmt2;
@@ -68,12 +70,14 @@ chomp $dd;
 chomp $hh;
 chomp $min;
 setup_date_vars();
-
 a(sstrtotime('') >= $ep, 'empty strtotime');
 setup_date_vars();
 a(sstrtotime($ep) == $ep, 'time strtotime');
 setup_date_vars();
 a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
+setup_date_vars();
+# print sstrtotime('11/25/16');
+a(sstrtotime($ep2) == sstrtotime('11/25/16'), 'ep2 sstrtotime');
 setup_date_vars();
 a(sstrtotime($ts) == $ep, 'ts strtotime');
 setup_date_vars();
