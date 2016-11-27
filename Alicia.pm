@@ -533,6 +533,7 @@ sub new {
     my $csv = Text::CSV_XS->new({ binary => 1 });
 
     my $dbh = DBI->connect("dbi:SQLite:dbname=$file","","");
+    
     my $create_sql = "
     CREATE TABLE IF NOT EXISTS _ST (
     key int,
@@ -542,14 +543,15 @@ sub new {
     ";
     my @dos = (
         $create_sql,
-        "CREATE unique index idx01 ON _ST(key)",
-        "ANALYZE",
         "PRAGMA synchronous = OFF",
+        "PRAGMA page_size = 65536",
         "PRAGMA auto_vacuum = INCREMENTAL",
         "PRAGMA journal_mode = OFF",
         "PRAGMA locking_mode = EXCLUSIVE",
         "PRAGMA read_uncommited = 1",
-        "PRAGMA temp_store = MEMORY"
+        "PRAGMA temp_store = MEMORY",
+        "CREATE unique index idx01 ON _ST(key)",
+        "ANALYZE"
     );
     foreach my $q (@dos) {
         $dbh->do($q);

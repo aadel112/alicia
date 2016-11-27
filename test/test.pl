@@ -76,7 +76,20 @@ sub test_functions{
     $sql = "SELECT SLEFT( 'aaccc', 2 )";
     $r = $a->exec($sql);
     $a->drop('it');
-    
+   
+    $f = 'examples/peak_nos.csv';
+    $out = `cat $f`;
+    chomp $out;
+    my @lines = split /\n/, $out;
+
+#     foreach my $l ( @lines ) {
+#         my @a = split /,/, $l;
+# #         print "$a[0]\n";
+#         my $s = "Select stimestamp($a[0])";
+#         $r = $a->exec($s);
+# #         print Dumper($r);
+#     }
+
     return $lrc;
 }
 

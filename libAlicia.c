@@ -1,5 +1,3 @@
-# use Inline C => Config =>
-#     INC => '-I/home/aadel112/alicia/inc/';
 use Inline C => << '...';
 
 /*
@@ -23,7 +21,6 @@ use Inline C => << '...';
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. 
  */
-// #include <Alicia.h>
 
 //EVIL MACROS
 //===========
@@ -577,9 +574,7 @@ char *trim(char *str) {
 struct tm epoch_to_tm(int epoch) {
     time_t t = (time_t)epoch;
     struct tm ts;
-
-    time(&t);
-
+    ctime(&t);
     ts = *localtime(&t);
     return ts;
 }
@@ -698,9 +693,7 @@ char* sdate(char* str) {
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
-
-    time(&t);
-
+    ctime(&t);
     ts = *localtime(&t);
     strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d", &ts);
 
@@ -723,9 +716,7 @@ char* stimestamp(char* str) {
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
     struct tm ts;
-
-    time(&t);
-
+    ctime(&t);
     ts = *localtime(&t);
     strftime(str, sizeof(str)*sizeof(char*), "%Y-%m-%d %T", &ts);
 
@@ -835,51 +826,51 @@ char* sdate_part(char* part, char* timestamp) {
 
     int epoch = sstrtotime(timestamp);
 
-    char* buf = timestamp;
+//     char* buf = timestamp;
     time_t t = (time_t)epoch;
     struct tm ts;
 
-    time(&t);
+    ctime(&t);
 
     ts = *localtime(&t);
 
     if( eq(part, SECOND) ) {
-        strftime(buf, sizeof(buf), "%S", &ts);
+        strftime(timestamp, sizeof(timestamp), "%S", &ts);
     }
     else if(eq(part, MINUTE)) {
-        strftime(buf, sizeof(buf), "%M", &ts);
+        strftime(timestamp, sizeof(timestamp), "%M", &ts);
     }
     else if(eq(part, HOUR)){
-        strftime(buf, sizeof(buf), "%C", &ts);    
+        strftime(timestamp, sizeof(timestamp), "%C", &ts);    
     }
     else if(eq(part, DAY)) {
-        strftime(buf, sizeof(buf), "%d", &ts);
+        strftime(timestamp, sizeof(timestamp), "%d", &ts);
     }
     else if(eq(part, MONTH)) {
-        strftime(buf, sizeof(buf), "%m", &ts);
+        strftime(timestamp, sizeof(timestamp), "%m", &ts);
     }
     else if(eq(part, YEAR)) {
-        strftime(buf, sizeof(buf), "%Y", &ts);
+        strftime(timestamp, sizeof(timestamp), "%Y", &ts);
     }
     else if(eq(part, CENTURY)) {
-        strftime(buf, sizeof(buf), "%C", &ts);
+        strftime(timestamp, sizeof(timestamp), "%C", &ts);
     }
     else if(eq(part, DOW)) {
-        sprintf(buf, "%d", (int)ts.tm_wday); 
+        sprintf(timestamp, "%d", (int)ts.tm_wday); 
     }
     else if(eq(part, DOY)) {
-        strftime(buf, sizeof(buf), "%j", &ts);
+        strftime(timestamp, sizeof(timestamp), "%j", &ts);
     }
     else if(eq(part, MILLENIUM)) {
-        strftime(buf, sizeof(buf), "%C", &ts);
-        int m = (atoi(buf) / 1000) + 1;
-        memset(buf, 0, BUFSIZE);
-        sprintf(buf, "%d", m);    
+        strftime(timestamp, sizeof(timestamp), "%C", &ts);
+        int m = (atoi(timestamp) / 1000) + 1;
+        memset(timestamp, 0, BUFSIZE);
+        sprintf(timestamp, "%d", m);    
     }
     else {
         return "";
     }
-    strcpy(timestamp, buf);
+//     strcpy(timestamp, buf);
 
     return timestamp;
 }
@@ -898,6 +889,7 @@ char* sdate_trunc(char* part, char* timestamp) {
     int epoch = sstrtotime(timestamp);
     struct tm ts = epoch_to_tm(epoch);
     char* buf = timestamp;
+//     printf("Z: %s, %d\n", timestamp, epoch);
 
     if(eq(part, MINUTE)) {
         ts.tm_sec = 0;
@@ -931,6 +923,7 @@ char* sdate_trunc(char* part, char* timestamp) {
 
     }
     strcpy(timestamp, buf);
+//     printf("A: %s\n", timestamp);
     return timestamp;
 }
 
@@ -1496,7 +1489,7 @@ package Regr_Sxx {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_sxx($_[0]) }
+    sub finalize { Alicia::regr_sxx($_[0]) }
 };
 
 package Regr_Syy {
@@ -1506,7 +1499,7 @@ package Regr_Syy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_syy($_[0]) }
+    sub finalize { Alicia::regr_syy($_[0]) }
 };
 
 package Regr_Sxy {
@@ -1516,7 +1509,7 @@ package Regr_Sxy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_sxy($_[0]) }
+    sub finalize { Alicia::regr_sxy($_[0]) }
 };
 
 package Regr_Slope {
@@ -1526,7 +1519,7 @@ package Regr_Slope {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_slope($_[0]) }
+    sub finalize { Alicia::regr_slope($_[0]) }
 };
 
 package Regr_Intercept {
@@ -1536,7 +1529,7 @@ package Regr_Intercept {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_intercept($_[0]) }
+    sub finalize { Alicia::regr_intercept($_[0]) }
 };
 
 package Regr_Count {
@@ -1546,31 +1539,31 @@ package Regr_Count {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ main::regr_count($_[0]) }
+    sub finalize{ Alicia::regr_count($_[0]) }
 };
 
 package Var_Pop {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { main::var_population($_[0]) }
+    sub finalize { Alicia::var_population($_[0]) }
 };
 
 package Var_Samp{
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { main::var_sample($_[0]) }
+    sub finalize { Alicia::var_sample($_[0]) }
 };
 
 package Stddev_Samp {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { main::stddev_sample($_[0]) }
+    sub finalize { Alicia::stddev_sample($_[0]) }
 };
 
 package Stddev_Pop {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { main::stddev_population($_[0]) }
+    sub finalize { Alicia::stddev_population($_[0]) }
 };
 
 package Corr {
@@ -1580,7 +1573,7 @@ package Corr {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::corr($_[0]) }
+    sub finalize { Alicia::corr($_[0]) }
 };
 
 package Covar_Pop {
@@ -1590,7 +1583,7 @@ package Covar_Pop {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ main::covar_population($_[0]) }
+    sub finalize{ Alicia::covar_population($_[0]) }
 };
 
 package Covar_Samp {
@@ -1600,7 +1593,7 @@ package Covar_Samp {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ main::covar_sample($_[0]) }
+    sub finalize{ Alicia::covar_sample($_[0]) }
 };
 
 package Regr_Avgx {
@@ -1610,7 +1603,7 @@ package Regr_Avgx {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_avgx($_[0]) }
+    sub finalize { Alicia::regr_avgx($_[0]) }
 };
 
 package Regr_Avgy {
@@ -1620,7 +1613,7 @@ package Regr_Avgy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { main::regr_avgy($_[0]) }
+    sub finalize { Alicia::regr_avgy($_[0]) }
 };
 
 

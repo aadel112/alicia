@@ -1,4 +1,5 @@
 use Data::Dumper;
+use Alicia;
 do 'libAlicia.c';
 # die();
 
@@ -14,13 +15,17 @@ sub a {
 }
 
 sub setup_date_vars {
+    my $setonly = shift;
     my @arr = ( 'ep','ep2', 'dt','ts','fmt2','yy','mm','dd','hh','min' );
-    foreach my $v ( @arr) {
-        eval "\$o$v = \$$v if( !\$o$v );";
+    if($setonly) {
+        foreach my $v ( @arr) {
+            eval "\$o$v = \$$v;";
+        }
     }
-    
-    foreach my $v ( @arr) {
-        eval "\$$v = \$o$v;";
+    if(!$setonly) {
+        foreach my $v ( @arr) {
+            eval "\$$v = \$o$v;";
+        }
     }
 }
 
@@ -49,6 +54,8 @@ a(suc_words('a bc') eq 'A Bc', 'uc_words');
 #DATE FUNCTIONS
 #==============
 $ep = `date +%s`;
+$e = `date +%s`;
+$ep2 = `date -d '2016-11-25' +%s`;
 $ep2 = `date -d '2016-11-25' +%s`;
 $dt = `date -d\@'$ep' +%Y-%m-%d`;
 $ts = `date -d\@'$ep' '+%Y-%m-%d %H:%M:%S'`;
@@ -60,6 +67,7 @@ $hh = `date -d\@'$ep' +%H`;
 $min = `date -d\@'$ep' +%M`;
 
 chomp $ep;
+chomp $e;
 chomp $ep2;
 chomp $dt;
 chomp $ts;
@@ -69,7 +77,8 @@ chomp $mm;
 chomp $dd;
 chomp $hh;
 chomp $min;
-setup_date_vars();
+
+setup_date_vars(1);
 a(sstrtotime('') >= $ep, 'empty strtotime');
 setup_date_vars();
 a(sstrtotime($ep) == $ep, 'time strtotime');
@@ -83,7 +92,11 @@ a(sstrtotime($ts) == $ep, 'ts strtotime');
 setup_date_vars();
 a(sdate('') eq $dt, 'date');
 setup_date_vars();
+a(sdate('1480118400') eq '2016-11-26', 'date2');
+setup_date_vars();
 a(stimestamp('') eq $ts, 'timestamp');
+setup_date_vars();
+a(stimestamp('1480118400') eq '2016-11-26 00:00:00', 'timeatamp2');
 setup_date_vars();
 a(sage($dt, $ts) =~ m/^-/, 'negative age');
 setup_date_vars();
@@ -95,8 +108,10 @@ a(sstrtotime(scurrent_timestamp()) >= $ep, 'current_timestamp' );
 setup_date_vars();
 a(sdate_part('day', $ep) eq $dd, 'date_part');
 setup_date_vars();
+$ep = $e;
 a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$min:00", 'date_trunc min');
 setup_date_vars();
+$ep = $e;
 a(sdate_trunc('month', $ep) eq "$yy-$mm-01", 'date_trunc mon');
 setup_date_vars();
 
