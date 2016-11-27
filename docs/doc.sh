@@ -14,7 +14,7 @@ n=$((`cat -n Alicia.md | grep METHOD | sed -r 's/^\s+//g' | awk -F' ' '{ print \
 
 INS_PERF=$(( `expr $n - 1` ))
 WC=$((`cat Alicia.md | wc -l`))
-REST=$(( $WC - $n + 1 ))
+REST=$(( $WC - $n ))
 
 # echo "$n, $INS_PERF, $REST"
 # exit
@@ -28,6 +28,7 @@ echo ""
 echo ""
 cat USE.md
 cat INSTALL.md 
+echo "# METHODS"
 cat Alicia.md | tail -$REST
 
 mv README.md ../

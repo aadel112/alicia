@@ -46,13 +46,17 @@ If you wish to add functions, just write the functions following the examples in
 If it's an aggregate function, you will neen to package it, and define a hash of the same format, called %AliciaAggs.
 
 ex: LOAD myext.pm
+
 ex: LOAD myext.java
+
 ex: LOAD myext.c
 
 =item C<READ INTO> - read a file or glob of files into a table. Using WITH allows you to overwrite the csv options, eg: separator, quote character, etc. The options use TEXT::CSV_XS. All of the options available are those listed by that module.
 
 ex: READ FILE 'sample.csv' INTO TABLE sampletable;
+
 ex: READ GLOB '/tmp/*.csv' INTO TABLE input;
+
 ex: READ GLOB '/etc/*.conf' INTO atbl WITH ( sep_char => undef, quote_char => undef ); 
 
 =item C<WRITE FROM> - write to a file or STDOUT from a table
