@@ -10,13 +10,15 @@ Do you have an unhealthy love of sql and wish you could develop everything in it
 
 =head1 DESCRIPTION
 
-It runs as a single instance of sqlite in-memory, with all concurrency protections off to provide it even more speed as a single threaded application. Because its sqlite, the data is hyper-compressed. In fact you'll find programs you've written in other high-level languages will take thousands of times the amount of memory. and still run much more slowly. Especially with proper indexing. All of the extended finctions are written in C, as is sqlite itself. If you, the user want to add another function, this too is a breeze to do.
+It runs as a single instance of sqlite in-memory, with all concurrency protections off to provide it even more speed as a single threaded application. Because its sqlite, the data is hyper-compressed. In fact you'll find programs you've written in other high-level languages will take thousands of times the amount of memory. and still run much more slowly. Especially with proper indexing. All of the extended functions are written in C, as is sqlite itself. If you, the user want to add another function, this too is a breeze to do.
 
-SQLite stores its data in a hyper-compressed format. Of course, it depends on your point-of-reference, but just comparing a perl hash to the same content dumped in SQLite; there's no comparison. I've seen instances where one algorithm was projected to take 62% of system RAM for over two days. The same algorithm re-implemented in SQLite and indexed and analyzed takes 20 minutes, and takes 0.1% of system RAM. In another case, one algorithm took about 2 and a half minutes, and over 40% of system RAM. Reimplenting the same algorithm in SQLite took 0.1% of memory, and ran in under 5 seconds.
+When I ran the benchmarks with simple programs, the memory use was about the same. I suspect, though that if you attempt to compare Alicia to anything complicated you'll see a big difference, as I have in the past because sqlite stores its data compressed. The only reason its comparable for simple programs is becuase you're doubling the data, once to read it into a text table, and then inserting it into a staging table.
 
-So, memory is one great reason to use Alicia. Another is the immense speed of SQLite. When all concurrnency needs are ignored, and all persistence is removed, what do you have left? A very mature C project that is  basically a drop-in replacement for a data structure. 
+So, memory is one great reason to use Alicia. Another is the immense speed of SQLite. When all concurrency needs are ignored, and all persistence is removed, what do you have left? A very mature C project that is  basically a drop-in replacement for a data structure. 
 
-Using perl's DBD::SQLite driver is a no-brainer compared to other implementatios, at this point. It's compiled with optimizations (-O2). It's got JSON and regex extensions built into it, and it allows function and aggregate creation.
+Writing some benchmark and example programs really struck a chord with me in just how much easier it was to write, read, and maintain sql-only programs.
+
+Using perl's DBD::SQLite driver is a no-brainer compared to other implementations, at this point. It's compiled with optimizations (-O2). It's got JSON and regex extensions built into it, and it allows function and aggregate creation.
 
 =head1 INSPIRATION
 
@@ -29,7 +31,7 @@ Another great implementation was for a certain type of summary process that ran 
 
 I had realized a couple years back that every one in big data basically loves SQL. Most data people naturally want to do everything in SQL. I had thought even then, before I'd really conceptualized the how, that a better ETL tool than the sort of thing that's currently on the market would be a programming language that all data people speak. What language is that? SQL!
 
-I then came to evangelize sqlite in-memory solutions for big data work. Afterall, what could be better than a super lightweight memory footprint, C speed, and SQL simplicity? It's superior to a perl hash or python dictionary in every way when you're able to create your table and load it, then add indexes, then analyze it. It uses less memory, and is faster.
+I then came to evangelize sqlite in-memory solutions for big data work. Afterall, what could be better than a super lightweight memory footprint, C speed, and SQL simplicity? 
 
 =head1 SYNTAX
 
@@ -127,14 +129,6 @@ B<Question>: Can I use Alicia for web development?
 
 You can, but the time to read the first instruction is way too much to make it viable, IMO. About .07 seconds on my machine. This is not something I've optimized for, but certainly, it could be made faster. I could load the database from a file, instead of building it from scratch every time. I could write more of the code in C, that does the parsing of instructions.
 
-B<Question>: How can Alicia be faster than C?
-
-Generally, if a C algotithm has the exact same information as an Alicia algorithm, it will be faster, but Alicia which uses SQLite, is running on C as well. Anecdotally, for 99% of real-world data munging solutions properly implemented in both languages, Alicia should be faster.
-
-The nature of a database is such that unless a C algorithm implemented a sorted B-Tree, and basically replicated everything a database does, the database is going to have the speed advantage on everything that's not a full-table scan as long as it's indexed.
-
-With most databases, they have networking overhead. Even with SQLite, by default it's writing to the much slower file system, and using concurrency protection based locking and file syncing. With Alicia, all of this is turned off, and everything is in-memory.
-
 B<Question>: Why is speed so important any way?
 
 Oftentimes, even for non-real time solutions, you still have reporting requirements of daily, hourly, etc. If the problem is fairly complex, this can sometimes be difficult to meet using conventional programming languages.
@@ -163,6 +157,12 @@ B<Question>: I'd really love to integrate this with Tableau or some other BI too
 
 One easy way would be to just output data as csv files being served from a web server, and have the BI tool read from that location. Like I said, though Alicia can be extended in any way.
 
+B<Question>: Is this production ready?
+
+No! Ideally, to start off, I'd like to just get a lot of people interested, and maybe a few of them to help with development. I do think it's relatively close.
+
+The speed and functionality are not where they need to be, though.
+
 =head1 CONTRIBUTING
 
 Everyone is more than welcome to contribute. In fact, I'm grateful to any one that wants to contribute. It could be via spelling corrections (more than possible as I typed this on my phone), algorithm improvements, feature requests, or anything else.
@@ -179,13 +179,13 @@ I can be contacted through this project, or by emailing me at -L<mailto:aadel112
 
 =head1 FUTURE PLANS 
 
-I really need to implement the set related functions from postresql, which I didn't really touch. 
+I really need to implement the set related functions from postresql, which I didn't really touch. Overall, Alicia just needs to support more. It needs a looping-type construct, although you can simulate one.
 
 SSTRTOTIME should be made better.
 
 I'd like to write more functions to cover more things. I'm thinking of starting by implementing the functions in numpy and scipy, and the algorithms in mahout.
 
-I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, Right now although, you **can** do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
+I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, and eventually develop the whole thing in C.  Right now although, you **can** do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
 
 On the roadmap, but way down the list, is getting automatic parallelization working. 
 
@@ -568,7 +568,7 @@ sub new {
         fetch => $dbh->prepare($fetch_sql)
     );
 
-    my $corelib = 'libAlicia.c';
+    my $corelib = $ENV{ALICIA_DIR} . "/" . 'libAlicia.c';
 
     my $self = {
         conn => $dbh,

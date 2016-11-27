@@ -24,6 +24,10 @@ exec > README.md
 cat Alicia.md | head -$INS_PERF
 cat perf.md 
 cat libAlicia.md
+echo ""
+echo ""
+cat USE.md
+cat INSTALL.md 
 cat Alicia.md | tail -$REST
 
 mv README.md ../
