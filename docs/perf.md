@@ -87,7 +87,7 @@ Code|1000 Records|10000 Records|50000 Records
 Perl|11.64|97.347|512.49
 Alicia|7.47|57.687|293.26
 
-![Peak Chart](https://raw.githubusercontent.com/aadel112/alicia/master/img/peak.png)
+![Peak Chart](../img/peak.png)
 
 #### Test 2
 In this test I wanted to see the timings of some of the extended functions Alicia provides.
@@ -203,7 +203,7 @@ Code|1000 Records|8000 Records|16000 Records
 Perl|.048|.248|.470
 Alicia|.109|.240|.440
 
-![S&P500 Chart](https://raw.githubusercontent.com/aadel112/alicia/master/img/sp500.png)
+![S&P500 Chart](../img/sp500.png)
 
 Discussion
 ==========
