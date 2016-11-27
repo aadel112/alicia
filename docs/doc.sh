@@ -10,16 +10,20 @@ cat Alicia.md | grep -v ^\s*\- | grep -v '#METHOD'> Alicia.md.tmp && mv Alicia.m
 
 rm Alicia.html
 
-n=$((`cat -n Alicia.md | grep METHODS | awk -F' ' '{print $1}'`))
+n=$((`cat -n Alicia.md | grep METHOD | sed -r 's/^\s+//g' | awk -F' ' '{ print \$1}'`))
 
-INS_PERF=$(( $n$n - 1 ))
+INS_PERF=$(( `expr $n - 1` ))
 WC=$((`cat Alicia.md | wc -l`))
 REST=$(( $WC - $n + 1 ))
 
+# echo "$n, $INS_PERF, $REST"
+# exit
+
 exec > README.md
 
-cat Alicia.md | head -$INS_PREF
+cat Alicia.md | head -$INS_PERF
 cat perf.md 
 cat libAlicia.md
 cat Alicia.md | tail -$REST
 
+mv README.md ../
