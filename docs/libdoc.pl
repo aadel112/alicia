@@ -4,6 +4,9 @@ use Data::Dumper;
 my @stack = ();
 print "libAlicia.c\n";
 print "-----------\n";
+print "\n";
+
+print "These methods extend Alicia to provide it with more functions from other databases.\n\n";
 
 my %so = (
     area => 0,
@@ -61,3 +64,6 @@ while ( my $line = <> ) {
         $h{$k} = $r;
     }
 }
+
+print "\n";
+print "To go along with these features there is also built-in regex and json support through the official sqlite extensions.\n";

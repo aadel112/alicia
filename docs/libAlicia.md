@@ -1,5 +1,8 @@
 libAlicia.c
 -----------
+
+These methods extend Alicia to provide it with more functions from other databases.
+
 Area|Function|Description|Parameters|Example|Example Return
 -----|--------|-----------|-------------|----------|-----------
 *S FUNCTIONS*|**slower**|Converts A field to all lower case text|a text field|`slower('HELLO')`|hello
@@ -44,3 +47,5 @@ Area|Function|Description|Parameters|Example|Example Return
 *A FUNCTIONS*|**regr_sxx**|returns the validates model, like all other implementations|(expr1, expr2) numeric|`regr_sxx(expr1, expr2)`
 *A FUNCTIONS*|**regr_syy**|returns the validates model, like all other implementations|(expr1, expr2) numeric|`regr_syy(expr1, expr2)`
 *A FUNCTIONS*|**regr_sxy**|returns the validates model, like all other implementations|(expr1, expr2) numeric|`regr_sxy(expr1, expr2)`
+
+To go along with these features there is also built-in regex and json support through the official sqlite extensions.

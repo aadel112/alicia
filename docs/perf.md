@@ -87,7 +87,7 @@ Code|1000 Records|10000 Records|50000 Records
 Perl|11.64|97.347|512.49
 Alicia|7.47|57.687|293.26
 
-![Peak Chart](https://github.com/aadel112/alicia/blob/master/peak.png)
+![Peak Chart](https://raw.githubusercontent.com/aadel112/alicia/master/img/peak.png)
 
 #### Test 2
 In this test I wanted to see the timings of some of the extended functions Alicia provides.
@@ -203,7 +203,7 @@ Code|1000 Records|8000 Records|16000 Records
 Perl|.048|.248|.470
 Alicia|.109|.240|.440
 
-![S&P500 Chart](https://github.com/aadel112/alicia/blob/master/sp500.png)
+![S&P500 Chart](https://raw.githubusercontent.com/aadel112/alicia/master/img/sp500.png)
 
 Discussion
 ==========
@@ -211,6 +211,6 @@ Discussion
 This is nice to see. Although I have to admit, I expected Alicia to be faster than this based off my past experiences. The good thing about Alicia, though is that it's scalable in terms of adding and removing fields, whereas the perl version requires changes in multiple places. I should also note that I wanted to just do basic tests, so I didn't make these nearly as hard as I could have on the perl code. I basically tried to chose tests I could easily write in perl that
 would show something meaningful.
 
-Alicia has lots of room for improvement. I think it would benefot greatly from being completely in C. The startup time would definitely go down. I'm thinking the custom function time would go down a lot compared to perl, too. Certainly, I could try a form of memoization stored in SQLite like the symbol table. That, too may speed it up.
+Alicia has lots of room for improvement. I think it would benefit greatly from being completely in C. The startup time would definitely go down. I'm thinking the custom function time would go down a lot compared to perl, too. Certainly, I could try a form of memoization stored in SQLite like the symbol table. That, too may speed it up.
 
 The big thing that really stood out to me, though was that in **both** tests Alicia's clarity really seemed top-notch to me. It's also much easier to make changes to. 
