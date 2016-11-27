@@ -38,12 +38,12 @@ I then came to evangelize sqlite in-memory solutions for big data work. Afterall
 SYNTAX
 ======
 
-Now let's get into the nuts and bolts. There are really just 5 basic statements Alicia accepts.
+Now let's get into the nuts and bolts. There are really just 6 basic statements Alicia accepts.
 
 `LOAD` - extend Alicia with a perl scipt, although, with Inline.pm, you can actually extend it in pretty much any language, as I've done with libAlicia.c. Run this at the beginning, and add custom functions, or run it at the end to do something else with the data. Load it into a table using some other connector, bypassing output file creation, produce an excel report, etc.  
 If you wish to add functions, just write the functions following the examples in libAlicia.c, create a hash called %AliciaFuncs key = function name, value = number of parameters.
 
-If it's an aggregate function, you will neen to package it, and define a hash of the same format, called %AliciaAggs.
+If it's an aggregate function, you will need to package it, and define a hash of the same format, called %AliciaAggs.
 
 ex: LOAD myext.pm
 
@@ -80,7 +80,7 @@ This makes some sense, as Alicia hasn't really been optimized at all. In both ca
 In all tests I ran each 3 times using the linux command (time), and recorded the best time.
 
 #### Test 1
-The first test was the conventional peak sessions problem, where you have a list of users, and beginning and end session times, and you have to figure out the exact peak over a time interval, meaning the second, and count where the highesr number of people were using the system concurrently.
+The first test was the conventional peak sessions problem, where you have a list of users, and beginning and end session times, and you have to figure out the exact peak over a time interval, meaning the second, and count where the highest number of people who were using the system concurrently.
 
 Here is the perl code:
 
@@ -478,7 +478,7 @@ SSTRTOTIME should be made better.
 
 I'd like to write more functions to cover more things. I'm thinking of starting by implementing the functions in numpy and scipy, and the algorithms in mahout.
 
-I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, and eventually develop the whole thing in C. Right now although, you \*\*can\*\* do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
+I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, and eventually develop the whole thing in C. Right now although, you **can** do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
 
 On the roadmap, but way down the list, is getting automatic parallelization working.
 

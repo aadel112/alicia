@@ -8,7 +8,7 @@ This makes some sense, as Alicia hasn't really been optimized at all. In both ca
 In all tests I ran each 3 times using the linux command (time), and recorded the best time.
 
 #### Test 1
-The first test was the conventional peak sessions problem, where you have a list of users, and beginning and end session times, and you have to figure out the exact peak over a time interval, meaning the second, and count where the highesr number of people were using the system concurrently.
+The first test was the conventional peak sessions problem, where you have a list of users, and beginning and end session times, and you have to figure out the exact peak over a time interval, meaning the second, and count where the highest number of people who were using the system concurrently.
 
 Here is the perl code:
 
