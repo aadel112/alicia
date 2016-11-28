@@ -35,7 +35,7 @@ I then came to evangelize sqlite in-memory solutions for big data work. Afterall
 
 =head1 SYNTAX
 
-Now let's get into the nuts and bolts. There are really just 5 basic statements Alicia accepts.
+Now let's get into the nuts and bolts. There are really just 6 basic statements Alicia accepts.
 
 =over 12
 
@@ -43,7 +43,7 @@ Now let's get into the nuts and bolts. There are really just 5 basic statements 
 
 If you wish to add functions, just write the functions following the examples in libAlicia.c, create a hash called %AliciaFuncs key = function name, value = number of parameters.
 
-If it's an aggregate function, you will neen to package it, and define a hash of the same format, called %AliciaAggs.
+If it's an aggregate function, you will need to package it, and define a hash of the same format, called %AliciaAggs.
 
 ex: LOAD myext.pm
 
@@ -189,7 +189,7 @@ SSTRTOTIME should be made better.
 
 I'd like to write more functions to cover more things. I'm thinking of starting by implementing the functions in numpy and scipy, and the algorithms in mahout.
 
-I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, and eventually develop the whole thing in C.  Right now although, you **can** do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
+I'd like to develop more of the main Alicia interpreter in C to make the load time more speedy, and eventually develop the whole thing in C.  Right now although, you B<can> do anything with Alicia, I wouldn't attempt to build a web site with it because the time just to load the symbol table and everything else, at least on my machine is almost .1 seconds. That's way too much IMO. So, to me that's really the biggest bottleneck. After that, it might be cool to develop some sort of web framework for Alicia.
 
 On the roadmap, but way down the list, is getting automatic parallelization working. 
 
@@ -227,6 +227,8 @@ Aaron Adel -L<https://www.paypal.me/aadel112/5>, -L<https://github.com/aadel112>
 
 package Alicia;
 # use Memoize;
+use strict;
+no strict "subs"; 
 use File::Glob ':globally'; 
 use DBI;
 use Text::CSV_XS qw( csv );
@@ -394,10 +396,12 @@ my $parse_load_instr = sub {
     return \%instr;
 };
 
-my $get_set = sub {
+my $get_set;
+$get_set = sub {
     my $self = shift;
     my $str = shift;
 
+    my $i;
     my @it = ('GET', 'SET');
     for my $s (@it) {
         while( my $sidx = index($s, $str) >= 0 ) {
@@ -408,7 +412,7 @@ my $get_set = sub {
             my $break = 0;
             my @stack = ();
             my $args = '';
-            for(my $i=$sidx+3;$i<$la && !$break;++$i){
+            for($i=$sidx+3;$i<$la && !$break;++$i){
                 if($a[$i] == '('){
                     push @stack, $a[$i];
                 }
@@ -470,6 +474,7 @@ my $fetch = sub {
     my $sql = shift;
     my $print_options = shift;
 
+    my $fh;
 #     print "$sql\n";
     my $sth = $self->{conn}->prepare($sql);
     $sth->execute;
@@ -493,7 +498,7 @@ my $fetch = sub {
             $_
         ) for @arr;
        
-        close $fh;
+        close $fh if($fh);
     }
 
     return \@arr;
@@ -503,6 +508,8 @@ my $register_lib = sub {
     my $self = shift;
     my $lib = shift;
 
+    our %AliciaAggs;
+    our %AliciaFuncs;
     do $lib if( -e $lib );
     foreach my $f ( keys %AliciaFuncs ) {
 #         my $sql_name = $f;
@@ -573,7 +580,7 @@ sub new {
     );
 
     my $corelib = $ENV{ALICIA_DIR} . "/" . 'libAlicia.c';
-
+    
     my $self = {
         conn => $dbh,
         hdls => \%handle_hash,
@@ -666,7 +673,7 @@ sub parse_and_execute_statements {
         elsif( $h{INSTR} eq 'WRITE' ) {
             my $a1 = $self->$get_set($h{FILE});
             my $a2 = $self->$get_set($h{TABLE});
-            my $a3 = $h->{WITH};
+            my $a3 = $h{WITH};
             $self->$DEBUG("Write '$a1', '$a2'", __LINE__);
             $self->write($a1, $a2, $a3);
         }
