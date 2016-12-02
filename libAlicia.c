@@ -1,5 +1,5 @@
+package libAlicia {
 use Inline C => << '...';
-
 /*
  * MIT License
  * Copyright (c) 2016 Aaron Adel
@@ -1432,36 +1432,44 @@ double regr_sxy(SV* self) {
 
     return n * covar_population(self);
 }
+
+//SET RETURNING FUNCTIONS
+//=======================
+//FROM - https://www.postgresql.org/docs/9.1/static/functions-srf.html
+
 ...
 
+
+}; # end package
+
 %AliciaFuncs = (
-    slower => 1,
-    supper => 1,
-    sreverse => 1,
-    sleft => 2,
-    sright => 2,
-    sindex => 2,
-    ssubstr => 3,
-    suc_words => 1,
-    sascii => 1,
-    schr => 1,
-    sbtrim => 2,
-    srpad => 3,
-    slpad => 3,
-    sreplace => 3,
-    srepeat => 2,
-    ssplit_part => 3,
-    sto_print => 1,
-    sto_ascii => 1,
-    sstrtotime => 1,
-    sdate => 1,
-    stimestamp => 1,
-    sage => 2,
-    scurrent_date => 0,
-    scurrent_time => 0,
-    scurrent_timestamp => 0,
-    sdate_part => 2,
-    sdate_trunc => 2
+    'libAlicia::slower' => 1,
+    'libAlicia::supper' => 1,
+    'libAlicia::sreverse' => 1,
+    'libAlicia::sleft' => 2,
+    'libAlicia::sright' => 2,
+    'libAlicia::sindex' => 2,
+    'libAlicia::ssubstr' => 3,
+    'libAlicia::suc_words' => 1,
+    'libAlicia::sascii' => 1,
+    'libAlicia::schr' => 1,
+    'libAlicia::sbtrim' => 2,
+    'libAlicia::srpad' => 3,
+    'libAlicia::slpad' => 3,
+    'libAlicia::sreplace' => 3,
+    'libAlicia::srepeat' => 2,
+    'libAlicia::ssplit_part' => 3,
+    'libAlicia::sto_print' => 1,
+    'libAlicia::sto_ascii' => 1,
+    'libAlicia::sstrtotime' => 1,
+    'libAlicia::sdate' => 1,
+    'libAlicia::stimestamp' => 1,
+    'libAlicia::sage' => 2,
+    'libAlicia::scurrent_date' => 0,
+    'libAlicia::scurrent_time' => 0,
+    'libAlicia::scurrent_timestamp' => 0,
+    'libAlicia::sdate_part' => 2,
+    'libAlicia::sdate_trunc' => 2
 );
 
 %AliciaAggs = (
@@ -1489,7 +1497,7 @@ package Regr_Sxx {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_sxx($_[0]) }
+    sub finalize { libAlicia::regr_sxx($_[0]) }
 };
 
 package Regr_Syy {
@@ -1499,7 +1507,7 @@ package Regr_Syy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_syy($_[0]) }
+    sub finalize { libAlicia::regr_syy($_[0]) }
 };
 
 package Regr_Sxy {
@@ -1509,7 +1517,7 @@ package Regr_Sxy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_sxy($_[0]) }
+    sub finalize { libAlicia::regr_sxy($_[0]) }
 };
 
 package Regr_Slope {
@@ -1519,7 +1527,7 @@ package Regr_Slope {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_slope($_[0]) }
+    sub finalize { libAlicia::regr_slope($_[0]) }
 };
 
 package Regr_Intercept {
@@ -1529,7 +1537,7 @@ package Regr_Intercept {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_intercept($_[0]) }
+    sub finalize { libAlicia::regr_intercept($_[0]) }
 };
 
 package Regr_Count {
@@ -1539,31 +1547,31 @@ package Regr_Count {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ Alicia::regr_count($_[0]) }
+    sub finalize{ libAlicia::regr_count($_[0]) }
 };
 
 package Var_Pop {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { Alicia::var_population($_[0]) }
+    sub finalize { libAlicia::var_population($_[0]) }
 };
 
 package Var_Samp{
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { Alicia::var_sample($_[0]) }
+    sub finalize { libAlicia::var_sample($_[0]) }
 };
 
 package Stddev_Samp {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { Alicia::stddev_sample($_[0]) }
+    sub finalize { libAlicia::stddev_sample($_[0]) }
 };
 
 package Stddev_Pop {
     sub new { bless [], shift; }
     sub step { push @{$_[0]}, $_[1] }
-    sub finalize { Alicia::stddev_population($_[0]) }
+    sub finalize { libAlicia::stddev_population($_[0]) }
 };
 
 package Corr {
@@ -1573,7 +1581,7 @@ package Corr {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::corr($_[0]) }
+    sub finalize { libAlicia::corr($_[0]) }
 };
 
 package Covar_Pop {
@@ -1583,7 +1591,7 @@ package Covar_Pop {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ Alicia::covar_population($_[0]) }
+    sub finalize{ libAlicia::covar_population($_[0]) }
 };
 
 package Covar_Samp {
@@ -1593,7 +1601,7 @@ package Covar_Samp {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize{ Alicia::covar_sample($_[0]) }
+    sub finalize{ libAlicia::covar_sample($_[0]) }
 };
 
 package Regr_Avgx {
@@ -1603,7 +1611,7 @@ package Regr_Avgx {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_avgx($_[0]) }
+    sub finalize { libAlicia::regr_avgx($_[0]) }
 };
 
 package Regr_Avgy {
@@ -1613,7 +1621,7 @@ package Regr_Avgy {
         push @$self, ($_[0]?$_[0]:0); 
         push @$self, ($_[1]?$_[1]:0);
     }
-    sub finalize { Alicia::regr_avgy($_[0]) }
+    sub finalize { libAlicia::regr_avgy($_[0]) }
 };
 
 

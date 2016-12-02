@@ -14,12 +14,14 @@ main();
 
 sub main {
     $rc = 0;
+    `mkdir -p out`;
     $rc += $rc + test_basic();
     $rc += $rc + test_file_io();
     $rc += $rc + test_functions();
     $rc += $rc + test_json(); # using base json
     $rc += $rc + test_script1();
     $rc += $rc + test_globbing_and_csv_delims();
+    $rc += $rd + test_series();
 #     $rc += $rc + test_os();
 #     $rc += $rc + test_extended_agg();
     if( not $rc ) {
@@ -121,6 +123,15 @@ sub test_globbing_and_csv_delims {
     chomp $wc;
 
     assert($wc > 0, "globbing and delims", __LINE__);
+}
+
+sub test_series {
+
+    $sql = "SELECT * FROM generate_series(1,10,2)";
+    $r = $a->exec($sql);
+    assert($r->[0][0]==1 and $r->[4][0]==9 , "gen series", __LINE__);
+
+
 }
 
 sub test_os {

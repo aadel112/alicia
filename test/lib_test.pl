@@ -1,6 +1,7 @@
 use Data::Dumper;
 use Alicia;
 do 'libAlicia.c';
+use DBI;
 # die();
 
 sub a {
@@ -31,25 +32,25 @@ sub setup_date_vars {
 
 #STRING FUNCTIONS
 #====================
-a(slower('AAA') eq 'aaa', 'lower');
-a(supper('aaa') eq 'AAA', 'upper');
-a(sreverse('zyx') eq 'xyz', 'reverse');
-a(sleft('abc', 2) eq 'ab', 'left');
-a(sright('abc', 2) eq 'bc', 'right');
-a(srepeat('aa', 3) eq 'aaaaaa', 'repeat');
-a(sindex('abcdefg', 'cd') == 2, 'index');
-a(ssubstr('aabsbsn', 2, 2) eq 'bs', 'substr');
-a(sascii('A') == 65, 'ascii');
-a(schr(65) eq 'A', 'chr');
-a(sbtrim('zzzxxxyyyyzzxxzz', 'zx') eq 'yyyy', 'btrim');
-a(srpad('aa', 9, 'bc') eq 'aabcbcbcb', 'rpad');
-a(slpad('aa', 5, 'bc') eq 'bcbaa', 'lpad');
-a(sreplace('hello world', 'hello', 'hi') eq 'hi world', 'replace');
-a(srepeat('ac', 3) eq 'acacac', 'repeat');
-a(ssplit_part('hello world', ' ', 0) eq 'hello', 'split_part');
-a(sto_print("a\nba") eq 'aba', 'to_print');
-a(sto_ascii('a') eq 'a', 'to_ascii');
-a(suc_words('a bc') eq 'A Bc', 'uc_words');
+a(libAlicia::slower('AAA') eq 'aaa', 'lower');
+a(libAlicia::supper('aaa') eq 'AAA', 'upper');
+a(libAlicia::sreverse('zyx') eq 'xyz', 'reverse');
+a(libAlicia::sleft('abc', 2) eq 'ab', 'left');
+a(libAlicia::sright('abc', 2) eq 'bc', 'right');
+a(libAlicia::srepeat('aa', 3) eq 'aaaaaa', 'repeat');
+a(libAlicia::sindex('abcdefg', 'cd') == 2, 'index');
+a(libAlicia::ssubstr('aabsbsn', 2, 2) eq 'bs', 'substr');
+a(libAlicia::sascii('A') == 65, 'ascii');
+a(libAlicia::schr(65) eq 'A', 'chr');
+a(libAlicia::sbtrim('zzzxxxyyyyzzxxzz', 'zx') eq 'yyyy', 'btrim');
+a(libAlicia::srpad('aa', 9, 'bc') eq 'aabcbcbcb', 'rpad');
+a(libAlicia::slpad('aa', 5, 'bc') eq 'bcbaa', 'lpad');
+a(libAlicia::sreplace('hello world', 'hello', 'hi') eq 'hi world', 'replace');
+a(libAlicia::srepeat('ac', 3) eq 'acacac', 'repeat');
+a(libAlicia::ssplit_part('hello world', ' ', 0) eq 'hello', 'split_part');
+a(libAlicia::sto_print("a\nba") eq 'aba', 'to_print');
+a(libAlicia::sto_ascii('a') eq 'a', 'to_ascii');
+a(libAlicia::suc_words('a bc') eq 'A Bc', 'uc_words');
 
 #DATE FUNCTIONS
 #==============
@@ -79,40 +80,40 @@ chomp $hh;
 chomp $min;
 
 setup_date_vars(1);
-a(sstrtotime('') >= $ep, 'empty strtotime');
+a(libAlicia::sstrtotime('') >= $ep, 'empty strtotime');
 setup_date_vars();
-a(sstrtotime($ep) == $ep, 'time strtotime');
+a(libAlicia::sstrtotime($ep) == $ep, 'time strtotime');
 setup_date_vars();
-a(sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
+a(libAlicia::sstrtotime($fmt2) == $ep, 'fmt2 strtotime');
 setup_date_vars();
 # print sstrtotime('11/25/16');
-a(sstrtotime($ep2) == sstrtotime('11/25/16'), 'ep2 sstrtotime');
+a(libAlicia::sstrtotime($ep2) == libAlicia::sstrtotime('11/25/16'), 'ep2 sstrtotime');
 setup_date_vars();
-a(sstrtotime($ts) == $ep, 'ts strtotime');
+a(libAlicia::sstrtotime($ts) == $ep, 'ts strtotime');
 setup_date_vars();
-a(sdate('') eq $dt, 'date');
+a(libAlicia::sdate('') eq $dt, 'date');
 setup_date_vars();
-a(sdate('1480118400') eq '2016-11-26', 'date2');
+a(libAlicia::sdate('1480118400') eq '2016-11-26', 'date2');
 setup_date_vars();
-a(stimestamp('') eq $ts, 'timestamp');
+a(libAlicia::stimestamp('') eq $ts, 'timestamp');
 setup_date_vars();
-a(stimestamp('1480118400') eq '2016-11-26 00:00:00', 'timeatamp2');
+a(libAlicia::stimestamp('1480118400') eq '2016-11-26 00:00:00', 'timeatamp2');
 setup_date_vars();
-a(sage($dt, $ts) =~ m/^-/, 'negative age');
+a(libAlicia::sage($dt, $ts) =~ m/^-/, 'negative age');
 setup_date_vars();
-a(scurrent_date() ge $dt, 'current_date');
+a(libAlicia::scurrent_date() ge $dt, 'current_date');
 setup_date_vars();
-a(length(scurrent_time()) == 8, 'current_time' );
+a(length(libAlicia::scurrent_time()) == 8, 'current_time' );
 setup_date_vars();
-a(sstrtotime(scurrent_timestamp()) >= $ep, 'current_timestamp' );
+a(libAlicia::sstrtotime(libAlicia::scurrent_timestamp()) >= $ep, 'current_timestamp' );
 setup_date_vars();
-a(sdate_part('day', $ep) eq $dd, 'date_part');
-setup_date_vars();
-$ep = $e;
-a(sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$min:00", 'date_trunc min');
+a(libAlicia::sdate_part('day', $ep) eq $dd, 'date_part');
 setup_date_vars();
 $ep = $e;
-a(sdate_trunc('month', $ep) eq "$yy-$mm-01", 'date_trunc mon');
+a(libAlicia::sdate_trunc('minute', $ep) eq "$yy-$mm-$dd $hh:$min:00", 'date_trunc min');
+setup_date_vars();
+$ep = $e;
+a(libAlicia::sdate_trunc('month', $ep) eq "$yy-$mm-01", 'date_trunc mon');
 setup_date_vars();
 
 
@@ -211,4 +212,9 @@ $v = $c->finalize();
 a(sprintf("%.3f", $v) eq "0.385", 'regr_slope');
 
 
-
+# # series tests
+# 
+# my $dbh = DBI->connect("dbi:SQLite:dbname=:memory:","","");
+# $rc = libAlicia::create_series( $dbh ) ;
+# a( !$rc , 'create_seies' );
+# 

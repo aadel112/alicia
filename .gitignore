@@ -6,3 +6,6 @@ out/*
 _Inline/
 docs/*.tmp
 *.tmp
+vendor/*.so
+vendor/*.dll
+vendor/*.o

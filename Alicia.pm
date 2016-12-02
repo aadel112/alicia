@@ -474,6 +474,8 @@ my $fetch = sub {
     my $sql = shift;
     my $print_options = shift;
 
+    #clone csv
+    my $csv = bless { %{$self->{csv}} }, ref $self->{csv};
     my $fh;
 #     print "$sql\n";
     my $sth = $self->{conn}->prepare($sql);
@@ -485,15 +487,17 @@ my $fetch = sub {
         push @arr, \@a;
     }
     $sth->finish;
+#     print Dumper(@arr); die();
     if( defined $print_options ) {
         if( defined $print_options->{file} ) {
             open $fh, ">:encoding(utf8)", $print_options->{file};
         }
-        my $csv = $self->{csv};
+#         my $csv = $self->{csv};
         foreach my $k ( keys %$print_options ) {
             $csv->{$k} = $print_options->{$k};
         }
-        
+   
+#         print Dumper($csv);die();
         $csv->say( defined $print_options->{file} ? $fh : \*STDOUT, 
             $_
         ) for @arr;
@@ -515,9 +519,12 @@ my $register_lib = sub {
 #         my $sql_name = $f;
 #         $sql_name =~ s/^s//g;
         my $s = eval '\&' . $f;
+        my $fname = $f;
+        $fname =~ s/^[^:]*:://g;
         my ($argc, $not_deterministic) =  split /\|/, $AliciaFuncs{$f};
+        
         $self->{conn}->sqlite_create_function(
-            $f, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC)
+            $fname, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC)
         );
     }
     undef %AliciaFuncs;
@@ -540,11 +547,16 @@ sub new {
     my $class = shift;
     my $file = shift;
 
+    my $MAX_ITER = 9007199254740992;
     $file ||= ':memory:';
     my $csv = Text::CSV_XS->new({ binary => 1 });
 
     my $dbh = DBI->connect("dbi:SQLite:dbname=$file","","");
-    
+
+    $dbh->sqlite_enable_load_extension(1);
+    my $series_ext = $ENV{ALICIA_DIR} . '/vendor/libSeries' . ("$^0" eq 'MSWin32' ? '.dll' : '.so'); 
+    $dbh->do("SELECT load_extension('$series_ext')");
+
     my $create_sql = "
     CREATE TABLE IF NOT EXISTS _ST (
     key int,
@@ -579,6 +591,8 @@ sub new {
         fetch => $dbh->prepare($fetch_sql)
     );
 
+    my $nref = (-$MAX_ITER..$MAX_ITER);
+
     my $corelib = $ENV{ALICIA_DIR} . "/" . 'libAlicia.c';
     
     my $self = {
@@ -590,7 +604,7 @@ sub new {
         debug => 0,
         test => 0,
         version_major => '0',
-        version_minor => '1'
+        version_minor => '2'
     };
     $self->$register_lib($corelib);
     
@@ -602,7 +616,7 @@ sub new {
 
 sub main { #TODO - help and error checking
     my $script_name = basename( $0 );
-    our $self = Alicia->new();
+    my $self = Alicia->new();
     $self->parse_and_execute_statements( $ARGV[0] );
 } 
 
@@ -776,7 +790,11 @@ sub read {
 
     
     my $sth;
-    my $csv = $self->{csv};
+#     my $csv = $self->{csv};
+
+    # clone csv
+    my $csv = bless { %{$self->{csv}} }, ref $self->{csv};    
+    
     if( defined $read_options ) {
         foreach my $k ( keys %$read_options ) {
             $csv->{$k} = $read_options->{$k};
@@ -786,7 +804,7 @@ sub read {
     my $glob = !$is_file ? $file : undef;
     my $file = !$is_file ? undef : $file;
     my @files = $is_file ? ( $file ) : eval "<$glob>";
-  
+
     my $i = 0;
     foreach my $file ( @files ) {
         open my $fh, "<:encoding(utf8)", $file;
