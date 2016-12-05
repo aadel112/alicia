@@ -1489,7 +1489,7 @@ double _hypot( double s1, double s2 ) {
  * @area: M FUNCTIONS
  * @function: deg2rad
  * @example: deg2rad(360)
- * @example return: 6.283185307 
+ * @example return: 6.28318530718 
  * @description: returns the radian representation of a number of degrees
  * @parameters: (double s1)
  * @return: double
@@ -1561,6 +1561,7 @@ double _arccosh(double v) {
 }
 
 double _unwrap( double v ) {
+    v = fabs(v) % (2*pi());
     return v > _pi() ? -(2*_pi()) - v : v;
 }
 
@@ -1593,7 +1594,7 @@ int _signbit(double v) {
 }
 
 double _copysign(double v1, double v2){
-    return v2 >= 0 ? abs(v1) : -1 * abs(v1);
+    return v2 >= 0 ? fabs(v1) : -1 * fabs(v1);
 }
 
 double _clip(double v, double min, double max){
@@ -1647,10 +1648,81 @@ double _logn(int n, double v) {
 
 //AGGREGATES
 //==========
-double prod(SV* self) {}
-double nansum(SV* self) {}
-double cumprod(SV* self) {}
-double cumsum(SV* self) {}
+
+double cprod(double* arr, int n) {
+    double ret = 0;
+    int i = 0;
+    for(; i < n; ++i){
+        ret *= arr[i];
+    }
+    return ret;
+}
+
+// double prod(SV* self) {
+//     AV* a = (AV*)SvRV(self);
+//     int i;
+//     ssize_t n = av_tindex(a) + 1;
+//     double A[n];
+//     for(i=0;i<n;++i) {
+//         A[i] = SvNV(*av_fetch(a, i, 0));
+//     }
+//     return cprod(A, (int)n);
+// }
+
+double csum(double* arr, int n) {
+    double ret = 0;
+    int i = 0;
+    for(; i < n; ++i){
+        ret += arr[i];
+    }
+    return ret;
+}
+
+double nansum(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    double A[n];
+    for(i=0;i<n;++i) {
+        A[i] = SvNOK(*av_fetch(a, i, 0)) ? 
+            SvNV(*av_fetch(a, i, 0)) : 0.0;
+    }
+    return csum(A, (int)n);
+}
+
+double nanprod(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    double A[n];
+    for(i=0;i<n;++i) {
+        A[i] = SvNOK(*av_fetch(a, i, 0)) ? 
+            SvNV(*av_fetch(a, i, 0)) : 1.0;
+    }
+    return cprod(A, (int)n);
+}
+
+double cumprod(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    double A[n];
+    for(i=0;i<n;++i) {
+        A[i] = SvNV(*av_fetch(a, i, 0));
+    }
+    return cprod(A, (int)n);
+}
+
+double cumsum(SV* self) {
+    AV* a = (AV*)SvRV(self);
+    int i;
+    ssize_t n = av_tindex(a) + 1;
+    double A[n];
+    for(i=0;i<n;++i) {
+        A[i] = SvNV(*av_fetch(a, i, 0));
+    }
+    return csum(A, (int)n);
+}
 
 
 
@@ -1753,7 +1825,11 @@ double cumsum(SV* self) {}
     Stddev_Samp => 1,
     Stddev_Pop => 1,
     Var_Samp => 1,
-    Var_Pop => 1
+    Var_Pop => 1,
+    CumSum => 1,
+    NanSum => 1,
+    CumProd => 1,
+    NanProd => 1
 );
 
 package Regr_Sxx {
@@ -1888,6 +1964,31 @@ package Regr_Avgy {
         push @$self, ($_[1]?$_[1]:0);
     }
     sub finalize { libAlicia::regr_avgy($_[0]) }
+};
+
+
+package CumSum {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { libAlicia::cumsum($_[0]) }
+};
+
+package NanSum {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { libAlicia::nansum($_[0]) }
+};
+
+package CumProd {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { libAlicia::cumprod($_[0]) }
+};
+
+package NanProd {
+    sub new { bless [], shift; }
+    sub step { push @{$_[0]}, $_[1] }
+    sub finalize { libAlicia::nanprod($_[0]) }
 };
 
 

@@ -217,4 +217,35 @@ a(sprintf("%.3f", $v) eq "0.385", 'regr_slope');
 # my $dbh = DBI->connect("dbi:SQLite:dbname=:memory:","","");
 # $rc = libAlicia::create_series( $dbh ) ;
 # a( !$rc , 'create_seies' );
+#
+
+# scipy tests
+# ===========
+#
+a(libAlicia::_hypot(3, 4) == 5, 'hypot');
+a(sprintf("%.3f", libAlicia::_deg2rad(360)) eq "6.283", 'deg2rad');
+a(libAlicia::_rad2deg(libAlicia::_deg2rad(360)), 'rad2deg');
+a(sprintf("%.3f", libAlicia::_sin(180)) eq "-0.801", 'sin');
+a(sprintf("%.3f", libAlicia::_cos(180)) eq "-0.598", 'cos');
+a(sprintf("%.3f", libAlicia::_tan(180)) eq "1.339", 'tan');
+a(sprintf("%.3f", libAlicia::_arcsin(180)) eq "-1.248", 'arcsin');
+a(sprintf("%.3f", libAlicia::_arccos(180)) eq "-1.671", 'arccos');
+a(sprintf("%.3f", libAlicia::_arctan(180)) eq "0.747", 'arctan');
+a(sprintf("%.3f", libAlicia::_arctan2(180, 360)) eq "0.464", 'arctan2');
+a(sprintf("%.3f", libAlicia::_sinh(180)) =~ m/^7/, 'sinh');
+a(sprintf("%.3f", libAlicia::_cosh(180)) =~ m/^7/, 'cosh');
+a(sprintf("%.3f", libAlicia::_tanh(180)) eq '1.000', 'tanh');
+a(sprintf("%.3f", libAlicia::_arcsinh(180)) eq '0.000', 'arcsinh');
+a(sprintf("%.3f", libAlicia::_arccosh(180)) eq '0.000', 'arccosh');
+a(sprintf("%.3f", libAlicia::_arctanh(180)) eq '1.000', 'arctanh');
+
+
+
+# print sprintf("%.3f", libAlicia::_sinh(180))."\n";
+# print sprintf("%.3f", libAlicia::_cosh(180))."\n";
+# print sprintf("%.3f", libAlicia::_tanh(180))."\n";
+# print sprintf("%.3f", libAlicia::_arcsinh(180))."\n";
+# print sprintf("%.3f", libAlicia::_arccosh(180))."\n";
+# print sprintf("%.3f", libAlicia::_arctanh(180))."\n";
 # 
+
