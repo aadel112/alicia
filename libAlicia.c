@@ -1638,7 +1638,7 @@ double _log10(double x) {
 }
 
 double _log2(double x) {
-    return 1 / _exp2(x);
+    return log(x) / log(2);
 }
 
 double _log1p(double x) {
@@ -1646,7 +1646,7 @@ double _log1p(double x) {
 }
 
 double _logn(int n, double v) {
-    return 1 / _expn(n, v);
+    return log(v)/log(n);
 }
  
 
@@ -1654,12 +1654,12 @@ double _logn(int n, double v) {
 //==========
 
 double cprod(double* arr, int n) {
-    double ret = 0;
+    double ret = 1;
     int i = 0;
     for(; i < n; ++i){
         ret *= arr[i];
     }
-    return ret;
+    return n>0?ret:0;
 }
 
 double csum(double* arr, int n) {
@@ -1676,9 +1676,10 @@ double nansum(SV* self) {
     int i;
     ssize_t n = av_tindex(a) + 1;
     double A[n];
+    SV** e;
     for(i=0;i<n;++i) {
-        A[i] = SvNOK(*av_fetch(a, i, 0)) ? 
-            SvNV(*av_fetch(a, i, 0)) : 0.0;
+        e = av_fetch(a,i,0);
+        A[i] = e != NULL ? SvNV(*e) : 0.0;
     }
     return csum(A, (int)n);
 }
@@ -1688,9 +1689,10 @@ double nanprod(SV* self) {
     int i;
     ssize_t n = av_tindex(a) + 1;
     double A[n];
+    SV** e;
     for(i=0;i<n;++i) {
-        A[i] = SvNOK(*av_fetch(a, i, 0)) ? 
-            SvNV(*av_fetch(a, i, 0)) : 1.0;
+        e = av_fetch(a,i,0);
+        A[i] = SvNV(*e) ? SvNV(*e) : 1;
     }
     return cprod(A, (int)n);
 }

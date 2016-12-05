@@ -255,15 +255,53 @@ a(libAlicia::_clip(-1, -10, -2) == -2, 'clipmax');
 $l = libAlicia::_log(10);
 $e = libAlicia::_exp($l);
 a($e eq '10', 'ln and e');
-$l = libAlicia::_log2(10);
+$l = libAlicia::_log10(10);
+$e = libAlicia::_exp10($l);
+a($e eq '10', 'log10 and exp10');
+$l = libAlicia::_log2(3);
 $e = libAlicia::_exp2($l);
-print "$l, $e\n";
-a($e eq '10', 'log2 and exp2');
+a($e eq '3', 'log2 and exp2');
+$f = libAlicia::_frexp(-0.9, 4);
+$l = libAlicia::_ldexp(-0.9, 4);
+a($f eq '-0.9', 'frexp');
+a($l eq '-14.4', 'ldexp');
+@a = (1, 2, 3, 4);
+
+$c = CumSum->new();
+for(my $i = 0; $i < scalar @a; ++$i ) {
+    $c->step($a[$i]);
+}
+$v = $c->finalize();
+a($v eq '10', 'cumsum');
+
+$c = CumProd->new();
+for(my $i = 0; $i < scalar @a; ++$i ) {
+    $c->step($a[$i]);
+}
+$v = $c->finalize();
+a($v eq "24", 'cumprod');
+
+push @a, 'test';
+push @a, 2;
+
+$c = NanSum->new();
+for(my $i = 0; $i < scalar @a; ++$i ) {
+    $c->step($a[$i]);
+}
+$v = $c->finalize();
+a($v eq '12', 'nansum');
+
+$c = NanProd->new();
+for(my $i = 0; $i < scalar @a; ++$i ) {
+    $c->step($a[$i]);
+}
+$v = $c->finalize();
+a($v eq "48", 'nanprod');
 
 
 # 
-# print sprintf("%.3f", libAlicia::_logaddexp(-0.9, 4))."\n";
-# print sprintf("%.3f", libAlicia::_logaddexp2(-0.9, 4))."\n";
+# print "$f, $l\n";
+# print sprintf("%.3f", libAlicia::_ldexp(-0.9, 4))."\n";
 # print sprintf("%.3f", libAlicia::_ceil(-0.9))."\n";
 # print sprintf("%.3f", libAlicia::_trunc(-0.9))."\n";
 # print sprintf("%.3f", libAlicia::_arccosh(180))."\n";
