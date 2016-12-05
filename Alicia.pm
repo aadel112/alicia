@@ -521,8 +521,10 @@ my $register_lib = sub {
         my $s = eval '\&' . $f;
         my $fname = $f;
         $fname =~ s/^[^:]*:://g;
+        $fname =~ s/^_//g;
         my ($argc, $not_deterministic) =  split /\|/, $AliciaFuncs{$f};
-        
+       
+#         print "$fname, $argc, $f\n";
         $self->{conn}->sqlite_create_function(
             $fname, $argc, $s, ($not_deterministic ? '' : SQLITE_DETERMINISTIC)
         );
@@ -531,8 +533,11 @@ my $register_lib = sub {
 
     foreach my $f ( keys %AliciaAggs ) {
         my ($argc, $not_deterministic) =  split /\|/, $AliciaAggs{$f};
+
+        my $fname = $f;      
+        $fname =~ s/^_//g;
         $self->{conn}->sqlite_create_aggregate(
-            $f, $argc, $f, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
+            $fname, $argc, $f, ($not_deterministic ? '' : SQLITE_DETERMINISTIC),
         );
     }
     undef %AliciaAggs;

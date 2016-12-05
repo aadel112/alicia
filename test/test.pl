@@ -75,7 +75,7 @@ sub test_functions{
     $r = $a->exec($sql);
     assert($r->[0][0] eq 'aaa', "C functions work", __LINE__);
 
-    $sql = "SELECT SLEFT( 'aaccc', 2 )";
+    $sql = "SELECT LEFTSTR( 'aaccc', 2 )";
     $r = $a->exec($sql);
     $a->drop('it');
    

@@ -61,14 +61,14 @@ use Inline C => << '...';
 
 /*
  * @area: S FUNCTIONS
- * @function: slower
- * @example: slower('HELLO')
+ * @function: lower
+ * @example: lower('HELLO')
  * @example return: hello
  * @description: Converts A field to all lower case text
  * @parameters: a text field
  * @return: a text field
  */ 
-char* slower( char* str ) {
+char* _lower( char* str ) {
     int i;
 
     for(i = 0; i < strlen(str); ++i){
@@ -80,14 +80,14 @@ char* slower( char* str ) {
 
 /*
  * @area: S FUNCTIONS
- * @function: supper
- * @example: supper('hello')
+ * @function: upper
+ * @example: upper('hello')
  * @example return: HELLO
  * @description: Converts A field to all upper case text
  * @parameters: a text field
  * @return: a text field
  */ 
-char* supper( char* str ) {
+char* _upper( char* str ) {
     int i;
     for(i = 0; i < strlen(str); ++i){
         str[i] = toupper(str[i]);
@@ -98,14 +98,14 @@ char* supper( char* str ) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sreverse
- * @example: sreverse('hello')
+ * @function: reverse
+ * @example: reverse('hello')
  * @example return: olleh
  * @description: Converts A field to the same text reversed
  * @parameters: a text field
  * @return: a text field
  */
-char* sreverse(char* str) {
+char* _reverse(char* str) {
     int l = strlen(str);
     int i;
     char* tmp = (char*)malloc(l);
@@ -122,15 +122,15 @@ char* sreverse(char* str) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sleft
- * @example: sleft('hello', 2)
+ * @function: leftstr
+ * @example: leftstr('hello', 2)
  * @example return: he
  * @description: returns the left len characters 
  * from the string str
  * @parameters: (str, len)
  * @return: a text field
  */
-char* sleft(char* str, int len) {
+char* _leftstr(char* str, int len) {
     if(strlen(str) > len) {
         str[len] = '\0';
     }
@@ -140,28 +140,28 @@ char* sleft(char* str, int len) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sright
- * @example: sright('hello', 2)
+ * @function: rightstr
+ * @example: rightstr('hello', 2)
  * @example return: lo
  * @description: returns the right len characters from the string str
  * @parameters: (str, len)
  * @return: a text field
  */
-char* sright(char* str, int len) {
-    return sreverse(sleft(sreverse(str), len));
+char* _rightstr(char* str, int len) {
+    return _reverse(_leftstr(_reverse(str), len));
 }
 
 
 /*
  * @area: S FUNCTIONS
- * @function: sindex
- * @example: sindex('hello', 'll')
+ * @function: index
+ * @example: index('hello', 'll')
  * @example return: 2
  * @description: returns the 0 based index if the needle in haystack if it exists, else -1
  * @parameters: (haystack, needle)
  * @return: int
  */
-int sindex(char* haystack, char* needle) {
+int _index(char* haystack, char* needle) {
     char* p = strtok(haystack, needle);
     if(p) {
         return strlen(p);
@@ -172,14 +172,14 @@ int sindex(char* haystack, char* needle) {
 
 /*
  * @area: S FUNCTIONS
- * @function: ssubstr
- * @example: ssubstr('hello', 0, 3)
+ * @function: substr
+ * @example: substr('hello', 0, 3)
  * @example return: hel
  * @description: returns the portion of the string from start for len characters, 0-based.
  * @parameters: (str, start, len)
  * @return: a text field
  */
-char* ssubstr(char* str, int start, int len) {
+char* _substr(char* str, int start, int len) {
     int l = strlen(str);
     int i, z=0;
 
@@ -202,14 +202,14 @@ char* ssubstr(char* str, int start, int len) {
 
 /*
  * @area: S FUNCTIONS
- * @function: suc_words
- * @example: suc_words('hello world')
+ * @function: uc_words
+ * @example: uc_words('hello world')
  * @example return: Hello World
  * @description: returns the text field with words beginnings upper cased.
  * @parameters: (str)
  * @return: a text field
  */
-char* suc_words(char* str) { 
+char* _uc_words(char* str) { 
     int i;
     int x = strlen(str);
     for (i=0;i<x;++i){
@@ -225,40 +225,40 @@ char* suc_words(char* str) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sascii
- * @example: sascii('A')
+ * @function: ascii
+ * @example: ascii('A')
  * @example return: 65
  * @description: returns the ascii decimal value of the character passed
  * @parameters: (c)
  * @return: int
  */
-int sascii(char c) {
+int _ascii(char c) {
     return (int)(c % 128);
 }
 
 /*
  * @area: S FUNCTIONS
- * @function: schr
- * @example: schr(65)
+ * @function: chr
+ * @example: chr(65)
  * @example return: A
  * @description: returns the ascii char corresponding to int n
  * @parameters: (n)
  * @return: char
  */
-char schr(int n) { 
+char _chr(int n) { 
     return (char)(n % 128); 
 }
 
 /*
  * @area: S FUNCTIONS
- * @function: sbtrim
- * @example: sbtrim('xxaxybcxxy', 'xy')
+ * @function: btrim
+ * @example: btrim('xxaxybcxxy', 'xy')
  * @example return: abc
  * @description: returns str with all of the characters in chars removed
  * @parameters: (str, chars)
  * @return: a text field
  */
-char* sbtrim(char* str, char* chars) { 
+char* _btrim(char* str, char* chars) { 
     int i,z, y = 0;
     int l = strlen(chars);
     int l2 = strlen(str);
@@ -288,14 +288,14 @@ char* sbtrim(char* str, char* chars) {
 
 /*
  * @area: S FUNCTIONS
- * @function: srpad
- * @example: srpad('x', 5, 'yz')
+ * @function: rpad
+ * @example: rpad('x', 5, 'yz')
  * @example return: xyzyz
  * @description: returns str right-padded with fill repeatedly until it reaches length len
  * @parameters: (str, len, fill)
  * @return: a text field
  */
-char* srpad(char* str, int len, char* fill) { 
+char* _rpad(char* str, int len, char* fill) { 
     char* tmp = (char*)malloc(len);
     int l = strlen(str);
     int l2 = strlen(fill);
@@ -323,14 +323,14 @@ char* srpad(char* str, int len, char* fill) {
 
 /*
  * @area: S FUNCTIONS
- * @function: slpad
- * @example: slpad('x', 5, 'yz')
+ * @function: lpad
+ * @example: lpad('x', 5, 'yz')
  * @example return: yzyzx
  * @description: returns str left-padded with fill repeatedly until it reaches length len
  * @parameters: (str, len, fill)
  * @return: a text field
  */
-char* slpad(char* str, int len, char* fill) { 
+char* _lpad(char* str, int len, char* fill) { 
     char* tmp = (char*)malloc(len);
     int l = strlen(str);
     int l2 = strlen(fill);
@@ -361,14 +361,14 @@ char* slpad(char* str, int len, char* fill) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sreplace
- * @example: sreplace('hello world', 'world', 'universe')
+ * @function: replace
+ * @example: replace('hello world', 'world', 'universe')
  * @example return: hello universe
  * @description: returns orig where rep is replaced with with
  * @parameters: (orig, rep, with)
  * @return: a text field
  */
-char *sreplace(char *orig, char *rep, char *with) {
+char* _replace(char *orig, char *rep, char *with) {
     char *result; // the return string
     char *ins;    // the next insert point
     char *tmp;    // varies
@@ -417,14 +417,14 @@ char *sreplace(char *orig, char *rep, char *with) {
 
 /*
  * @area: S FUNCTIONS
- * @function: srepeat
- * @example: srepeat('abc', 3)
+ * @function: repeat
+ * @example: repeat('abc', 3)
  * @example return: abcabcabc
  * @description: returns str repeated n times
  * @parameters: (str, n)
  * @return: a text field
  */
-char* srepeat(char* str, int n) { 
+char* _repeat(char* str, int n) { 
     int l = strlen(str);
     char* tmp = (char*)malloc( n * l );
     int i, z = 0;
@@ -444,14 +444,14 @@ char* srepeat(char* str, int n) {
 
 /*
  * @area: S FUNCTIONS
- * @function: ssplit_part
- * @example: ssplit_part('hello world', ' ', 1)
+ * @function: split_part
+ * @example: split_part('hello world', ' ', 1)
  * @example return: world
  * @description: returns the 0-based field from  str split on delim
  * @parameters: (str, delim, field)
  * @return: a text field
  */
-char* ssplit_part(char* str, char* delim, int field) { 
+char* _split_part(char* str, char* delim, int field) { 
     char* p = strtok(str, delim);
     int i = 0;
     while(p){
@@ -468,14 +468,14 @@ char* ssplit_part(char* str, char* delim, int field) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sto_print
- * @example: sto_print('hello\nworld)
+ * @function: to_print
+ * @example: to_print('hello\nworld)
  * @example return: helloworld
  * @description: returns the str with all non-printing characters removed
  * @parameters: (str)
  * @return: a text field
  */
-char* sto_print(char* str) { 
+char* _to_print(char* str) { 
     char* tmp = str;
     int len = strlen(str);
     int i, z = 0;
@@ -497,14 +497,14 @@ char* sto_print(char* str) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sto_ascii
- * @example: sto_ascii('hello˚, ˳world')
+ * @function: to_ascii
+ * @example: to_ascii('hello˚, ˳world')
  * @example return: helloworld
  * @description: returns the str with all non-ascii characters removed
  * @parameters: (str)
  * @return: a text field
  */
-char* sto_ascii(char* str) { 
+char* _to_ascii(char* str) { 
     char* tmp = str;
     int len = strlen(str);
     int i, z = 0;
@@ -552,7 +552,7 @@ int is_all_digits(char* str) {
     return 1;
 }
 
-char *trim(char *str) {
+char* trim(char *str) {
     char *end;
 
     // Trim leading space
@@ -584,15 +584,15 @@ struct tm epoch_to_tm(int epoch) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sstrtotime
- * @example: sstrtotime('2016-11-05 03:14:59')
+ * @function: _strtotime
+ * @example: _strtotime('2016-11-05 03:14:59')
  * @example return: 1478315699
  * @description: not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times
  * returns the epoch if the date-like string
  * @parameters: (str)
  * @return: int epoch
  */
-int sstrtotime(char *s) {
+int _strtotime(char *s) {
     time_t t;
     struct tm tm;
     int dd, mm, yy;
@@ -679,15 +679,15 @@ okay:
 
 /*
  * @area: S FUNCTIONS
- * @function: sdate
- * @example: sstrtotime('2016-11-05 03:14:59')
+ * @function: date
+ * @example: date('2016-11-05 03:14:59')
  * @example return: 2016-11-05
  * @description: returns the date only of  the date-like string
  * @parameters: (str)
  * @return: a text field
  */
-char* sdate(char* str) {
-    int epoch = sstrtotime(str);
+char* _date(char* str) {
+    int epoch = _strtotime(str);
 
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
@@ -703,15 +703,15 @@ char* sdate(char* str) {
 
 /*
  * @area: S FUNCTIONS
- * @function: stimestamp
- * @example: stimestamp('2016-11-05')
+ * @function: timestamp
+ * @example: timestamp('2016-11-05')
  * @example return: 2016-11-05 00:00:00
  * @description: returns the timestamp  the date-like string
  * @parameters: (str)
  * @return: a text field
  */
-char* stimestamp(char* str) {
-    int epoch = sstrtotime(str);
+char* _timestamp(char* str) {
+    int epoch = _strtotime(str);
     str = (char*)malloc(BUFSIZE);
     memset(str, 0, BUFSIZE);
     time_t t = (time_t)epoch;
@@ -729,17 +729,17 @@ char* stimestamp(char* str) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sage
- * @example: sage('2016-11-05 03:14:59', '2016-11-05')
+ * @function: age
+ * @example: age('2016-11-05 03:14:59', '2016-11-05')
  * @example return: 0 years 0 days 3 hours 14 minutes 59 seconds
  * @description: returns the difference of date-like times e1 and e2
  * the date-like string
  * @parameters: (e1, e2)
  * @return: a text field
  */
-char* sage(char* timestamp1, char* timestamp2) {
-    int e1 = sstrtotime(timestamp1);
-    int e2 = sstrtotime(timestamp2);
+char* _age(char* timestamp1, char* timestamp2) {
+    int e1 = _strtotime(timestamp1);
+    int e2 = _strtotime(timestamp2);
 
     timestamp1 = (char*)malloc(MEDBUF);
     memset(timestamp1, 0, MEDBUF);
@@ -771,60 +771,60 @@ char* sage(char* timestamp1, char* timestamp2) {
 
 /*
  * @area: S FUNCTIONS
- * @function: scurrent_date
- * @example: scurrent_date()
+ * @function: current_date
+ * @example: current_date()
  * @example return: 2016-11-25
  * @description: returns the current date
  * @parameters: ()
  * @return: a text field
  */
-char* scurrent_date() {
-    return sdate("");
+char* _current_date() {
+    return _date("");
 }
 
 
 /*
  * @area: S FUNCTIONS
- * @function: scurrent_time
- * @example: scurrent_time()
+ * @function: current_time
+ * @example: current_time()
  * @example return: 14:33:32
  * @description: returns the current time
  * @parameters: ()
  * @return: a text field
  */
-char* scurrent_time() {
-    return ssplit_part(stimestamp(""), " ", 1);
+char* _current_time() {
+    return _split_part(_timestamp(""), " ", 1);
 }
 
 
 /*
  * @area: S FUNCTIONS
- * @function: scurrent_timestamp
- * @example: scurrent_timestamp()
+ * @function: current_timestamp
+ * @example: current_timestamp()
  * @example return: 2016-11-25 14:33:32
  * @description: returns the current timestamp
  * @parameters: ()
  * @return: a text field
  */
-char* scurrent_timestamp() {
-    return stimestamp("");
+char* _current_timestamp() {
+    return _timestamp("");
 }
 
 
 /*
  * @area: S FUNCTIONS
- * @function: sdate_part
- * @example: sdate_part('minute', '2016-11-25 14:33:32')
+ * @function: date_part
+ * @example: date_part('minute', '2016-11-25 14:33:32')
  * @example return: 33
  * @description: returns the piece of the timestamp specified as part; options are second, minute, hour, day, month, year, century, millenium, dow, doy
  * @parameters: (part, timestamp)
  * @return: a text field
  */
-char* sdate_part(char* part, char* timestamp) {
-    char* tmp = slower(part);
+char* _date_part(char* part, char* timestamp) {
+    char* tmp = _lower(part);
     swap(tmp, part);
 
-    int epoch = sstrtotime(timestamp);
+    int epoch = _strtotime(timestamp);
 
 //     char* buf = timestamp;
     time_t t = (time_t)epoch;
@@ -878,15 +878,15 @@ char* sdate_part(char* part, char* timestamp) {
 
 /*
  * @area: S FUNCTIONS
- * @function: sdate_trunc
- * @example: sdate_part('minute', '2016-11-25 14:33:32')
+ * @function: date_trunc
+ * @example: date_part('minute', '2016-11-25 14:33:32')
  * @example return: 2016-11-25 14:33:00
  * @description: returns the timestamp or date truncated at part; options are minute, hour, day, month, year
  * @parameters: (part, timestamp)
  * @return: a text field
  */
-char* sdate_trunc(char* part, char* timestamp) {
-    int epoch = sstrtotime(timestamp);
+char* _date_trunc(char* part, char* timestamp) {
+    int epoch = _strtotime(timestamp);
     struct tm ts = epoch_to_tm(epoch);
     char* buf = timestamp;
 //     printf("Z: %s, %d\n", timestamp, epoch);
@@ -1433,43 +1433,309 @@ double regr_sxy(SV* self) {
     return n * covar_population(self);
 }
 
-//SET RETURNING FUNCTIONS
-//=======================
-//FROM - https://www.postgresql.org/docs/9.1/static/functions-srf.html
+//SCIPY MATH FUNCTIONS
+//====================
+//FROM - https://docs.scipy.org/doc/numpy/reference/routines.math.html
+
+//SFUNCTIONS
+//==========
+
+//MFUNCTIONS
+//==========
+
+/*
+ * @area: M FUNCTIONS
+ * @function: pi
+ * @example: pi()
+ * @example return: 3.14159265359
+ * @description: returns pi
+ * @parameters: () 
+ * @return: double
+ */
+double _pi() {
+    return 3.14159265359;
+}
+
+
+/*
+ * @area: M FUNCTIONS
+ * @function: e
+ * @example: e()
+ * @example return: 2.71828182846
+ * @description: returns e
+ * @parameters: () 
+ * @return: double
+ */
+double _e() {
+    return 2.71828182846;
+}
+
+
+/*
+ * @area: M FUNCTIONS
+ * @function: hypot
+ * @example: hypot(3, 4)
+ * @example return: 5
+ * @description: returns the hypotenuse of sides s1 and s2
+ * @parameters: (double s1, double s2)
+ * @return: double
+ */
+double _hypot( double s1, double s2 ) {
+    return sqrt( (s1*s1) + (s2*s2) );
+}
+
+
+/*
+ * @area: M FUNCTIONS
+ * @function: deg2rad
+ * @example: deg2rad(360)
+ * @example return: 6.283185307 
+ * @description: returns the radian representation of a number of degrees
+ * @parameters: (double s1)
+ * @return: double
+ */
+double _deg2rad( double s1 ) {
+    return s1 * _pi() / 180;
+}
+
+/*
+ * @area: M FUNCTIONS
+ * @function: rad2deg
+ * @example: rad2deg(deg2rad(360))
+ * @example return: 360
+ * @description: returns the degree representation of a number of randians
+ * @parameters: (double s1)
+ * @return: double
+ */
+double _rad2deg( double s1 ) {
+    return 180 * s1 / _pi();
+}
+
+double _sin(double v) {
+    return sin(v);
+}
+
+double _cos(double v) {
+    return cos(v);
+}
+
+double _tan(double v) {
+    return tan(v); 
+}
+
+double _arctan(double v) {
+    return 1 / _tan(v);
+}
+double _arcsin(double v) {
+    return 1 / _sin(v);
+}
+double _arccos(double v) {
+    return 1 / _cos(v);
+}
+double _arctan2(double v1, double v2) {
+    return atan2(v1, v2); 
+}
+
+double _sinh(double v) {
+    return sinh(v);
+}
+
+double _cosh(double v) {
+    return cosh(v);
+}
+
+double _tanh(double v) {
+    return tanh(v);
+}
+
+double _arctanh(double v) {
+    return 1 / _tanh(v);
+}
+
+double _arcsinh(double v) {
+    return 1 / _sinh(v);
+}
+
+double _arccosh(double v) {
+    return 1 / _cosh(v);
+}
+
+double _unwrap( double v ) {
+    return v > _pi() ? -(2*_pi()) - v : v;
+}
+
+int _fix(double v){
+    return (int)v;
+}
+
+int _floor(double v){
+    return floor(v);
+}
+
+int _ceil(double v){
+    return ceil(v);
+}
+
+int _trunc(double v){
+   return trunc(v);
+}
+
+double _logaddexp(double c1, double c2){
+    return log(exp(c1) + exp(c2));    
+}
+
+double _logaddexp2(double c1, double c2){
+    return log2( exp2(c1) + exp2(c2) ); 
+}
+
+int _signbit(double v) {
+    return v >= 0;
+}
+
+double _copysign(double v1, double v2){
+    return v2 >= 0 ? abs(v1) : -1 * abs(v1);
+}
+
+double _clip(double v, double min, double max){
+    return v <= max && v >= min ? v : ( v > max ? max : min );
+}
+
+double _exp(double v) {
+    return exp(v);
+}
+
+double _expm1(double v) {
+    return exp(v) - 1;
+}
+
+double _exp2(double v) {
+    return pow(2,v);
+}
+
+double _expn(int n, double v) {
+    return pow(n,v);
+}
+
+double _frexp(double x, int exp){
+    return frexp(x, &exp);
+}
+
+double _ldexp(double x, int exp){
+    return ldexp(x, exp);
+}
+
+double _log(double x) {
+    return log(x);
+}
+
+double _log10(double x) {
+    return log10(x);
+}
+
+double _log2(double x) {
+    return 1 / _exp2(x);
+}
+
+double _log1p(double x) {
+    return 1+_log(x);
+}
+
+double _logn(int n, double v) {
+    return 1 / _expn(n, v);
+}
+ 
+
+//AGGREGATES
+//==========
+double prod(SV* self) {}
+double nansum(SV* self) {}
+double cumprod(SV* self) {}
+double cumsum(SV* self) {}
+
+
+
+//SETS TODO 
+//=========
+// diff, ediff1d, gradient, cross, trapz
+//i0, sinc
+// interp
+
+//UNKNOWN TODO
+//angle, real, imag, conj
+//convolve, 
 
 ...
-
-
 }; # end package
 
 %AliciaFuncs = (
-    'libAlicia::slower' => 1,
-    'libAlicia::supper' => 1,
-    'libAlicia::sreverse' => 1,
-    'libAlicia::sleft' => 2,
-    'libAlicia::sright' => 2,
-    'libAlicia::sindex' => 2,
-    'libAlicia::ssubstr' => 3,
-    'libAlicia::suc_words' => 1,
-    'libAlicia::sascii' => 1,
-    'libAlicia::schr' => 1,
-    'libAlicia::sbtrim' => 2,
-    'libAlicia::srpad' => 3,
-    'libAlicia::slpad' => 3,
-    'libAlicia::sreplace' => 3,
-    'libAlicia::srepeat' => 2,
-    'libAlicia::ssplit_part' => 3,
-    'libAlicia::sto_print' => 1,
-    'libAlicia::sto_ascii' => 1,
-    'libAlicia::sstrtotime' => 1,
-    'libAlicia::sdate' => 1,
-    'libAlicia::stimestamp' => 1,
-    'libAlicia::sage' => 2,
-    'libAlicia::scurrent_date' => 0,
-    'libAlicia::scurrent_time' => 0,
-    'libAlicia::scurrent_timestamp' => 0,
-    'libAlicia::sdate_part' => 2,
-    'libAlicia::sdate_trunc' => 2
+    'libAlicia::_lower' => 1,
+    'libAlicia::_upper' => 1,
+    'libAlicia::_reverse' => 1,
+    'libAlicia::_leftstr' => 2,
+    'libAlicia::_rightstr' => 2,
+    'libAlicia::_index' => 2,
+    'libAlicia::_substr' => 3,
+    'libAlicia::_uc_words' => 1,
+    'libAlicia::_ascii' => 1,
+    'libAlicia::_chr' => 1,
+    'libAlicia::_btrim' => 2,
+    'libAlicia::_rpad' => 3,
+    'libAlicia::_lpad' => 3,
+    'libAlicia::_replace' => 3,
+    'libAlicia::_repeat' => 2,
+    'libAlicia::_split_part' => 3,
+    'libAlicia::_to_print' => 1,
+    'libAlicia::_to_ascii' => 1,
+    'libAlicia::_strtotime' => 1,
+    'libAlicia::_date' => 1,
+    'libAlicia::_timestamp' => 1,
+    'libAlicia::_age' => 2,
+    'libAlicia::_current_date' => 0,
+    'libAlicia::_current_time' => 0,
+    'libAlicia::_current_timestamp' => 0,
+    'libAlicia::_date_part' => 2,
+    'libAlicia::_date_trunc' => 2,
+    'libAlicia::_e' => 0,
+    'libAlicia::_pi' => 0,
+    'libAlicia::_hypot' => 2,
+    'libAlicia::_deg2rad' => 1,
+    'libAlicia::_rad2deg' => 1,
+    'libAlicia::_rad2deg' => 1,
+    'libAlicia::_sin' => 1,
+    'libAlicia::_cos' => 1,
+    'libAlicia::_tan' => 1,
+    'libAlicia::_sinh' => 1,
+    'libAlicia::_cosh' => 1,
+    'libAlicia::_tanh' => 1,
+    'libAlicia::_arcsin' => 1,
+    'libAlicia::_arccos' => 1,
+    'libAlicia::_arctan' => 1,
+    'libAlicia::_arctan2' => 2,
+    'libAlicia::_arcsinh' => 1,
+    'libAlicia::_arccosh' => 1,
+    'libAlicia::_arctanh' => 1,
+    'libAlicia::_unwrap' => 1,
+    'libAlicia::_fix' => 1,
+    'libAlicia::_floor' => 1,
+    'libAlicia::_ceil' => 1,
+    'libAlicia::_trunc' => 1,
+    'libAlicia::_logaddexp' => 2,
+    'libAlicia::_logaddexp2' => 2,
+    'libAlicia::_signbit' => 1,
+    'libAlicia::_copysign' => 2,
+    'libAlicia::_clip' => 1,
+    'libAlicia::_exp' => 1,
+    'libAlicia::_expm1' => 1,
+    'libAlicia::_exp2' => 1,
+    'libAlicia::_frexp' => 2,
+    'libAlicia::_ldexp' => 2,
+    'libAlicia::_log' => 1,
+    'libAlicia::_log10' => 1,
+    'libAlicia::_log2' => 1,
+    'libAlicia::_log1p' => 1,
+    'libAlicia::_logn' => 2,
+    'libAlicia::_expn' => 2,
+
 );
 
 %AliciaAggs = (
