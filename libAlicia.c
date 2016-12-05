@@ -1447,13 +1447,13 @@ double regr_sxy(SV* self) {
  * @area: M FUNCTIONS
  * @function: pi
  * @example: pi()
- * @example return: 3.14159265359
+ * @example return: 3.14159265358979
  * @description: returns pi
  * @parameters: () 
  * @return: double
  */
 double _pi() {
-    return 3.14159265359;
+    return M_PI;
 }
 
 
@@ -1461,13 +1461,13 @@ double _pi() {
  * @area: M FUNCTIONS
  * @function: e
  * @example: e()
- * @example return: 2.71828182846
+ * @example return: 2.71828182845905
  * @description: returns e
  * @parameters: () 
  * @return: double
  */
 double _e() {
-    return 2.71828182846;
+    return M_E;
 }
 
 
@@ -1488,8 +1488,8 @@ double _hypot( double s1, double s2 ) {
 /*
  * @area: M FUNCTIONS
  * @function: deg2rad
- * @example: deg2rad(360)
- * @example return: 6.28318530718 
+ * @example: deg2rad(360) / pi()
+ * @example return: 2 
  * @description: returns the radian representation of a number of degrees
  * @parameters: (double s1)
  * @return: double
@@ -1501,7 +1501,7 @@ double _deg2rad( double s1 ) {
 /*
  * @area: M FUNCTIONS
  * @function: rad2deg
- * @example: rad2deg(deg2rad(360))
+ * @example: rad2deg(2*pi())
  * @example return: 360
  * @description: returns the degree representation of a number of randians
  * @parameters: (double s1)
@@ -1511,51 +1511,180 @@ double _rad2deg( double s1 ) {
     return 180 * s1 / _pi();
 }
 
+/*
+ * @area: M FUNCTIONS
+ * @function: sin
+ * @example: round(sin(2*pi()),10)
+ * @example return: 0
+ * @description: returns the sine of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _sin(double v) {
     return sin(v);
 }
 
+/*
+ * @area: M FUNCTIONS
+ * @function: cos
+ * @example: round(cos(2*pi()),10)
+ * @example return: 1
+ * @description: returns the cosine of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _cos(double v) {
     return cos(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: tan
+ * @example: round(tan(2*pi()),10)
+ * @example return: 0
+ * @description: returns the tangent of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _tan(double v) {
     return tan(v); 
 }
 
+/*
+ * @area: M FUNCTIONS
+ * @function: arctan
+ * @example: round(arctan(-1),10)
+ * @example return: -0.7853981634
+ * @description: returns the archtan of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arctan(double v) {
-    return 1 / _tan(v);
+    return atan(v);
 }
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arcsin
+ * @example: round(arcsin(-1),10)
+ * @example return: -1.5707963268
+ * @description: returns the archsin of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arcsin(double v) {
-    return 1 / _sin(v);
+    return asin(v);
 }
+
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arcsin
+ * @example: round(arccos(-1),10)
+ * @example return: 3.1415926536
+ * @description: returns the archcos of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arccos(double v) {
-    return 1 / _cos(v);
+    return acos(v);
 }
+
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arctan2
+ * @example: round(arctan2(-1,1),10)
+ * @example return: -0.7853981634 
+ * @description: returns atan2 of s1 and s2
+ * @parameters: (double s1, double s2)
+ * @return: double
+ */
 double _arctan2(double v1, double v2) {
     return atan2(v1, v2); 
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: sinh
+ * @example: round(sinh(2*pi()),10)
+ * @example return: 267.744894041 
+ * @description: returns the hyperbolic sine of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _sinh(double v) {
     return sinh(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: cosh
+ * @example: round(cosh(2*pi()),10)
+ * @example return: 267.744894041 
+ * @description: returns the hyperbolic cosine of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _cosh(double v) {
     return cosh(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: tanh
+ * @example: round(tanh(2*pi()),10)
+ * @example return: 0.9999930253 
+ * @description: returns the hyperbolic tangent of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _tanh(double v) {
     return tanh(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arctanh
+ * @example: round(arctanh(2*pi()),10)
+ * @example return: 1.0000069747
+ * @description: returns the hyperbolic arctan of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arctanh(double v) {
     return 1 / _tanh(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arctanh
+ * @example: round(arcsinh(2*pi()),10)
+ * @example return: 0.0037348985
+ * @description: returns the hyperbolic arcsin of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arcsinh(double v) {
     return 1 / _sinh(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: arccosh
+ * @example: round(arccosh(2*pi()),10)
+ * @example return: 0.0037348724 
+ * @description: returns the hyperbolic arccos of s1
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _arccosh(double v) {
     return 1 / _cosh(v);
 }
