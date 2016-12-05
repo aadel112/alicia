@@ -1,9 +1,9 @@
-test/* linguist-documentation
-examples/* linguist-documentation
-docs/* linguist-documentation
-perf_tests/* linguist-documentation
-test/ linguist-documentation
-examples/ linguist-documentation
-docs/ linguist-documentation
-perf_tests/ linguist-documentation
+test/* linguist-vendored
+examples/* linguist-vendored
+docs/* linguist-vendored
+perf_tests/* linguist-vendored
+test/ linguist-vendored
+examples/ linguist-vendored
+docs/ linguist-vendored
+perf_tests/ linguist-vendored
 
