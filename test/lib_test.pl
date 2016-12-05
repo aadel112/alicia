@@ -238,13 +238,34 @@ a(sprintf("%.3f", libAlicia::_tanh(180)) eq '1.000', 'tanh');
 a(sprintf("%.3f", libAlicia::_arcsinh(180)) eq '0.000', 'arcsinh');
 a(sprintf("%.3f", libAlicia::_arccosh(180)) eq '0.000', 'arccosh');
 a(sprintf("%.3f", libAlicia::_arctanh(180)) eq '1.000', 'arctanh');
+a(sprintf("%.3f", libAlicia::_unwrap(8)) eq '1.717', 'unwrap');
+a(sprintf("%.3f", libAlicia::_fix(-.9)) eq '0.000', 'fix');
+a(sprintf("%.3f", libAlicia::_floor(-.9)) eq '-1.000', 'floor');
+a(sprintf("%.3f", libAlicia::_ceil(-.9)) eq '0.000', 'ceil');
+a(sprintf("%.3f", libAlicia::_trunc(-.9)) eq '0.000', 'trunc');
+a(sprintf("%.3f", libAlicia::_logaddexp(-.9, 4)) eq '4.007', 'logaddexp');
+a(sprintf("%.3f", libAlicia::_logaddexp2(-.9, 4)) eq '4.048', 'logaddexp2');
+a(libAlicia::_signbit(-1) == 0, 'signbitn');
+a(libAlicia::_signbit(1) == 1, 'signbitp');
+a(libAlicia::_copysign(-1, -1) == -1, 'copysignn');
+a(libAlicia::_copysign(-1, 1) == 1, 'copysignp');
+a(libAlicia::_clip(-1, 0, 1) == 0, 'clipmin');
+a(libAlicia::_clip(-1, -10, -2) == -2, 'clipmax');
+
+$l = libAlicia::_log(10);
+$e = libAlicia::_exp($l);
+a($e eq '10', 'ln and e');
+$l = libAlicia::_log2(10);
+$e = libAlicia::_exp2($l);
+print "$l, $e\n";
+a($e eq '10', 'log2 and exp2');
 
 
-
-# print sprintf("%.3f", libAlicia::_sinh(180))."\n";
-# print sprintf("%.3f", libAlicia::_cosh(180))."\n";
-# print sprintf("%.3f", libAlicia::_tanh(180))."\n";
-# print sprintf("%.3f", libAlicia::_arcsinh(180))."\n";
+# 
+# print sprintf("%.3f", libAlicia::_logaddexp(-0.9, 4))."\n";
+# print sprintf("%.3f", libAlicia::_logaddexp2(-0.9, 4))."\n";
+# print sprintf("%.3f", libAlicia::_ceil(-0.9))."\n";
+# print sprintf("%.3f", libAlicia::_trunc(-0.9))."\n";
 # print sprintf("%.3f", libAlicia::_arccosh(180))."\n";
 # print sprintf("%.3f", libAlicia::_arctanh(180))."\n";
 # 

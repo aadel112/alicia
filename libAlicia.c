@@ -1561,7 +1561,7 @@ double _arccosh(double v) {
 }
 
 double _unwrap( double v ) {
-    v = fabs(v) % (2*pi());
+    v = fmod(fabs(v), (2*_pi()));
     return v > _pi() ? -(2*_pi()) - v : v;
 }
 
@@ -1613,6 +1613,10 @@ double _exp2(double v) {
     return pow(2,v);
 }
 
+double _exp10(double v) {
+    return pow(10,v);
+}
+
 double _expn(int n, double v) {
     return pow(n,v);
 }
@@ -1657,17 +1661,6 @@ double cprod(double* arr, int n) {
     }
     return ret;
 }
-
-// double prod(SV* self) {
-//     AV* a = (AV*)SvRV(self);
-//     int i;
-//     ssize_t n = av_tindex(a) + 1;
-//     double A[n];
-//     for(i=0;i<n;++i) {
-//         A[i] = SvNV(*av_fetch(a, i, 0));
-//     }
-//     return cprod(A, (int)n);
-// }
 
 double csum(double* arr, int n) {
     double ret = 0;
@@ -1799,6 +1792,7 @@ double cumsum(SV* self) {
     'libAlicia::_exp' => 1,
     'libAlicia::_expm1' => 1,
     'libAlicia::_exp2' => 1,
+    'libAlicia::_exp10' => 1,
     'libAlicia::_frexp' => 2,
     'libAlicia::_ldexp' => 2,
     'libAlicia::_log' => 1,

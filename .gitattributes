@@ -1,4 +1,9 @@
 test/* linguist-documentation
 examples/* linguist-documentation
 docs/* linguist-documentation
-perf_tests/*
+perf_tests/* linguist-documentation
+test/ linguist-documentation
+examples/ linguist-documentation
+docs/ linguist-documentation
+perf_tests/ linguist-documentation
+
