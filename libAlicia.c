@@ -1689,43 +1689,142 @@ double _arccosh(double v) {
     return 1 / _cosh(v);
 }
 
+/*
+ * @area: M FUNCTIONS
+ * @function: unwrap
+ * @example: unwrap(8)
+ * @example return: 1.71681469282041
+ * @description: returns the value if it's less than or equal to pi, else the 2pi - the value mod 2pi
+ * @parameters: (double s1)
+ * @return: double
+ */
 double _unwrap( double v ) {
     v = fmod(fabs(v), (2*_pi()));
     return v > _pi() ? -(2*_pi()) - v : v;
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: fix
+ * @example: fix(-8.1)
+ * @example return: -8
+ * @description: returns the int value of s1
+ * @parameters: (double s1)
+ * @return: int
+ */
 int _fix(double v){
     return (int)v;
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: floor
+ * @example: floor(-8.1)
+ * @example return: -9
+ * @description: returns the floor of s1
+ * @parameters: (double s1)
+ * @return: int
+ */
 int _floor(double v){
     return floor(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: ceil
+ * @example: ceil(8.1)
+ * @example return: 9
+ * @description: returns the ceil of s1
+ * @parameters: (double s1)
+ * @return: int
+ */
 int _ceil(double v){
     return ceil(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: trunc
+ * @example: trunc(8.1)
+ * @example return: 8
+ * @description: returns the value of s1 with its decimal digits removed
+ * @parameters: (double s1)
+ * @return: int
+ */
 int _trunc(double v){
    return trunc(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: logaddexp
+ * @example: logaddexp(e(), pi())
+ * @example return: 3.64531816098924
+ * @description: returns log(exp(c1) + exp(c2))
+ * @parameters: (double c1, double c2)
+ * @return: double
+ */
 double _logaddexp(double c1, double c2){
     return log(exp(c1) + exp(c2));    
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: logaddexp2
+ * @example: logaddexp2(e(), pi())
+ * @example return: 3.94540767250265
+ * @description: returns log2(exp2(c1) + exp2(c2))
+ * @parameters: (double c1, double c2)
+ * @return: double
+ */
 double _logaddexp2(double c1, double c2){
     return log2( exp2(c1) + exp2(c2) ); 
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: signbit
+ * @example: signbit(-e())
+ * @example return: 0
+ * @description: returns 1 if v >= 0 else 0
+ * @parameters: (double v)
+ * @return: int
+ */
 int _signbit(double v) {
     return v >= 0;
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: copysign
+ * @example: copysign(8,-1)
+ * @example return: -8
+ * @description: returns v1 with the sign of v2
+ * @parameters: (double v1, double v2)
+ * @return: double
+ */
 double _copysign(double v1, double v2){
     return v2 >= 0 ? fabs(v1) : -1 * fabs(v1);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: clip
+ * @example: clip(8,-1, 1)
+ * @example return: 1
+ * @description: returns min if v is less than min, max if v is greater than max, else v
+ * @parameters: (double v, double min, double max)
+ * @return: double
+ */
 double _clip(double v, double min, double max){
     return v <= max && v >= min ? v : ( v > max ? max : min );
 }

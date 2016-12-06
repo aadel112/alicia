@@ -65,5 +65,15 @@ Area|Function|Description|Parameters|Example|Example Return
 *M FUNCTIONS*|**arctanh**|returns the hyperbolic arctan of s1|(double s1)|`round(arctanh(2*pi()),10)`|1.0000069747
 *M FUNCTIONS*|**arctanh**|returns the hyperbolic arcsin of s1|(double s1)|`round(arcsinh(2*pi()),10)`|0.0037348985
 *M FUNCTIONS*|**arccosh**|returns the hyperbolic arccos of s1|(double s1)|`round(arccosh(2*pi()),10)`|0.0037348724
+*M FUNCTIONS*|**unwrap**|returns the value if it's less than or equal to pi, else the 2pi - the value mod 2pi|(double s1)|`unwrap(8)`|1.71681469282041
+*M FUNCTIONS*|**fix**|returns the int value of s1|(double s1)|`fix(-8.1)`|-8
+*M FUNCTIONS*|**floor**|returns the floor of s1|(double s1)|`floor(-8.1)`|-9
+*M FUNCTIONS*|**ceil**|returns the ceil of s1|(double s1)|`ceil(8.1)`|9
+*M FUNCTIONS*|**trunc**|returns the value of s1 with its decimal digits removed|(double s1)|`trunc(8.1)`|8
+*M FUNCTIONS*|**logaddexp**|returns log(exp(c1) + exp(c2))|(double c1, double c2)|`logaddexp(e(), pi())`|3.64531816098924
+*M FUNCTIONS*|**logaddexp2**|returns log2(exp2(c1) + exp2(c2))|(double c1, double c2)|`logaddexp2(e(), pi())`|3.94540767250265
+*M FUNCTIONS*|**signbit**|returns 1 if v >= 0 else 0|(double v)|`signbit(-e())`|0
+*M FUNCTIONS*|**copysign**|returns v1 with the sign of v2|(double v1, double v2)|`copysign(8,-1)`|-8
+*M FUNCTIONS*|**clip**|returns min if v is less than min, max if v is greater than max, else v|(double v, double min, double max)|`clip(8,-1, 1)`|1
 
 To go along with these features there is also built-in regex and json support through the official sqlite extensions.
