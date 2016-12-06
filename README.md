@@ -311,7 +311,7 @@ Area|Function|Description|Parameters|Example|Example Return
 *S FUNCTIONS*|**split_part**|returns the 0-based field from  str split on delim|(str, delim, field)|`split_part('hello world', ' ', 1)`|world
 *S FUNCTIONS*|**to_print**|returns the str with all non-printing characters removed|(str)|`to_print('hello\nworld)`|helloworld
 *S FUNCTIONS*|**to_ascii**|returns the str with all non-ascii characters removed|(str)|`to_ascii('hello˚, ˳world')`|helloworld
-*S FUNCTIONS*|**_strtotime**|not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times|(str)|`_strtotime('2016-11-05 03:14:59')`|1478315699
+*S FUNCTIONS*|**strtotime**|not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times|(str)|`strtotime('2016-11-05 03:14:59')`
 *S FUNCTIONS*|**date**|returns the date only of  the date-like string|(str)|`date('2016-11-05 03:14:59')`|2016-11-05
 *S FUNCTIONS*|**timestamp**|returns the timestamp  the date-like string|(str)|`timestamp('2016-11-05')`|2016-11-05 00:00:00
 *S FUNCTIONS*|**age**|returns the difference of date-like times e1 and e2|(e1, e2)|`age('2016-11-05 03:14:59', '2016-11-05')`|0 years 0 days 3 hours 14 minutes 59 seconds
@@ -363,6 +363,16 @@ Area|Function|Description|Parameters|Example|Example Return
 *M FUNCTIONS*|**signbit**|returns 1 if v >= 0 else 0|(double v)|`signbit(-e())`|0
 *M FUNCTIONS*|**copysign**|returns v1 with the sign of v2|(double v1, double v2)|`copysign(8,-1)`|-8
 *M FUNCTIONS*|**clip**|returns min if v is less than min, max if v is greater than max, else v|(double v, double min, double max)|`clip(8,-1, 1)`|1
+*M FUNCTIONS*|**exp**|returns e() to the v(th) power|(double v)|`exp(3)`|20.0855369231877
+*M FUNCTIONS*|**exp**|returns e() to the v(th) power minus one|(double v)|`expm1(3)`|19.0855369231877
+*M FUNCTIONS*|**exp2**|returns 2 to the v(th) power|(double v)|`exp2(3)`|8
+*M FUNCTIONS*|**exp10**|returns 10 to the v(th) power|(double v)|`exp10(3)`|1000
+*M FUNCTIONS*|**expn**|returns n to the v(th) power|(int n, double v)|`expn(3, 3)`|9
+*M FUNCTIONS*|**log**|returns the natural log of x|(double x)|`log(e())`|1
+*M FUNCTIONS*|**log10**|returns the log10 of x|(double x)|`log10(10)`|1
+*M FUNCTIONS*|**log1**|returns the log2 of x|(double x)|`log2(2)`|1
+*M FUNCTIONS*|**log1p**|returns the natural log of x plus one|(double x)|`log1p(e())`|2
+*M FUNCTIONS*|**logn**|returns the natural log sub n of v|(int n, double x)|`logn(11, 11)`|1
 
 To go along with these features there is also built-in regex and json support through the official sqlite extensions.
 

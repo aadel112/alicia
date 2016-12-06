@@ -584,9 +584,9 @@ struct tm epoch_to_tm(int epoch) {
 
 /*
  * @area: S FUNCTIONS
- * @function: _strtotime
- * @example: _strtotime('2016-11-05 03:14:59')
- * @example return: 1478315699
+ * @function: strtotime
+ * @example: strtotime('2016-11-05 03:14:59')
+ * @examplereturn: 1478315699
  * @description: not super functional, needs to be  coded out more. Only accepts 6 formats,  and epoch times
  * returns the epoch if the date-like string
  * @parameters: (str)
@@ -1829,25 +1829,76 @@ double _clip(double v, double min, double max){
     return v <= max && v >= min ? v : ( v > max ? max : min );
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: exp
+ * @example: exp(3)
+ * @example return: 20.0855369231877
+ * @description: returns e() to the v(th) power
+ * @parameters: (double v)
+ * @return: double
+ */
 double _exp(double v) {
     return exp(v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: exp
+ * @example: expm1(3)
+ * @example return: 19.0855369231877
+ * @description: returns e() to the v(th) power minus one
+ * @parameters: (double v)
+ * @return: double
+ */
 double _expm1(double v) {
     return exp(v) - 1;
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: exp2
+ * @example: exp2(3)
+ * @example return: 8
+ * @description: returns 2 to the v(th) power
+ * @parameters: (double v)
+ * @return: double
+ */
 double _exp2(double v) {
     return pow(2,v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: exp10
+ * @example: exp10(3)
+ * @example return: 1000
+ * @description: returns 10 to the v(th) power
+ * @parameters: (double v)
+ * @return: double
+ */
 double _exp10(double v) {
     return pow(10,v);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: expn
+ * @example: expn(3, 3)
+ * @example return: 9
+ * @description: returns n to the v(th) power
+ * @parameters: (int n, double v)
+ * @return: double
+ */
 double _expn(int n, double v) {
     return pow(n,v);
 }
+
 
 double _frexp(double x, int exp){
     return frexp(x, &exp);
@@ -1857,22 +1908,72 @@ double _ldexp(double x, int exp){
     return ldexp(x, exp);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: log
+ * @example: log(e())
+ * @example return: 1
+ * @description: returns the natural log of x
+ * @parameters: (double x)
+ * @return: double
+ */
 double _log(double x) {
     return log(x);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: log10
+ * @example: log10(10)
+ * @example return: 1
+ * @description: returns the log10 of x
+ * @parameters: (double x)
+ * @return: double
+ */
 double _log10(double x) {
     return log10(x);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: log1
+ * @example: log2(2)
+ * @example return: 1
+ * @description: returns the log2 of x
+ * @parameters: (double x)
+ * @return: double
+ */
 double _log2(double x) {
     return log(x) / log(2);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: log1p
+ * @example: log1p(e())
+ * @example return: 2
+ * @description: returns the natural log of x plus one
+ * @parameters: (double x)
+ * @return: double
+ */
 double _log1p(double x) {
     return 1+_log(x);
 }
 
+
+/*
+ * @area: M FUNCTIONS
+ * @function: logn
+ * @example: logn(11, 11)
+ * @example return: 1
+ * @description: returns the natural log sub n of v
+ * @parameters: (int n, double x)
+ * @return: double
+ */
 double _logn(int n, double v) {
     return log(v)/log(n);
 }
